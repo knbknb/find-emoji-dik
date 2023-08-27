@@ -143,7 +143,7 @@ if toots:
         emoji_toot = f"{emoji_toot}\n(Chapter {chapter_num}: \"{chapter_title}\", Paragraph {paragraph_num}, Sentence {sentence_num})"
         print(emoji_toot)
     # Post the emoji toot
-    #api.toot(emoji_toot)
+    api.toot(emoji_toot)
 
 # Wait for a while before polling again
 #time.sleep(60)
