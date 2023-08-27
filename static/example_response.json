@@ -1,0 +1,2 @@
+{"id": "chatcmpl-7i8zpWHVJK8wwhOmcRghnqCvuPt77", "object": "chat.completion", "created": 1690755369, "model": "gpt-4-0613", "choices": [{"index": 0, "message": {"role": "assistant", "content": "🔎✅🔀🔄🦋⚙⚖️🎯🕹️ 💫🏊\u200d♂️⛔️🔐🏃\u200d♂️➡️🚪🗝️"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 36, "completion_tokens": 62, "total_tokens": 98}}
+
