@@ -45,3 +45,14 @@ I you have configured an account on the Mastodon social network, a toot with thi
 ```
 
 Check your account if this was really published to your timeline.
+
+## Requirements
+
+### .env File
+
+Put all your API credentials (Mastodon API, LLM API) into an `.env` file in the same directory as the script. The script will read the credentials from there. The `dotenv` module is used to read the `.env` file.  
+I dind't include my `.env` file in this repo, so you have to create your own.
+
+### Helper Scripts
+
+Take a look at the files in the `static/` directory of this repo, e.g., to see how to create a Virtualenv.
