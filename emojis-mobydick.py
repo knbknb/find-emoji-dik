@@ -126,6 +126,7 @@ if toots:
     fragment = soup.get_text()
     # find the fragment in the book
     toot = fragment
+    print(toot)
     # fragment = 'stubb and flask mounted on them'
     n_words = 4
     fragment = last_n_words(fragment.lower(), n_words)
@@ -141,9 +142,11 @@ if toots:
     if chapter_num:
         print("Found in book!")
         emoji_toot = f"{emoji_toot}\n(Chapter {chapter_num}: \"{chapter_title}\", Paragraph {paragraph_num}, Sentence {sentence_num})"
-        print(emoji_toot)
     # Post the emoji toot
-    api.toot(emoji_toot)
-
+    if emoji_toot:
+        print(emoji_toot)
+        api.toot(emoji_toot)
+    else:
+        print("No emoji toot found.")
 # Wait for a while before polling again
 #time.sleep(60)
