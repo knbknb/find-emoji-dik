@@ -115,7 +115,8 @@ def translate_to_emoji(url, openai_access_token="openai_access_token", text="üê
     return emoji_text
 
 
-# Fetch the most recent toots from the '@mobydick' user
+# Fetch the most recent toots from the '@mobydick' user.
+# It is a user we already follow, thus the search is faster.
 mobydick = api.account_search(user, following=True)[0]
 
 toot_storage = load_toot_storage(toot_storage_file)
@@ -125,10 +126,10 @@ if toots:
     most_recent_toot_id = most_recent_toot.id
     # Fetch the text of the toot
     text = most_recent_toot.content
-    # strip the html tag(s)
+    # strip the html tag(s), if present, e.g. <p>
     soup = BeautifulSoup(text, 'html.parser')
     fragment = soup.get_text()
-    # find the fragment in the book
+    # find the fragment in the book stored locally
     toot = fragment
     print(toot)
     # fragment = 'stubb and flask mounted on them'

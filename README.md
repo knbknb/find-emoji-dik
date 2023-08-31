@@ -52,7 +52,7 @@ Check your account if this was really published to your timeline.
 ### .env File
 
 Put all your API credentials (Mastodon API, LLM API) into an `.env` file in the same directory as the script. The script will read the credentials from there. The `python-dotenv` module is used to read the `.env` file.  
-I dind't include my `.env` file in this repo, so you have to create your own.
+I didn't include my `.env` file in this repo, so you have to create your own.
 
 The `.env` file should look like this:
 
@@ -66,3 +66,13 @@ OPENAI_ACCESS_TOKEN='sk-bx...'
 ### Helper Scripts
 
 Take a look at the files in the `static/` directory of this repo, e.g., to see how to create a Virtualenv.
+
+## TODO
+
+- Keep refactoring the code, e.g., to make it more modular.
+- Make it a script that polls mastodon account of the @mobydick  bot account every n minutes, and posts new toots to our account.
+  - Make sure it doesn't post the same toot several times.
+  - Clearly handle edge-case when a text fragment was not found in the book (e.g. when punctuation or whitespace differences are interfering)
+  - Properly reply to the original toot, so that the thread is kept intact.
+- Rewrite this script with other LLMs, with other books, with other bots.
+- Translate the whole book into emojis, and post it to all social networks.
