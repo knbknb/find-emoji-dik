@@ -16,17 +16,11 @@ load_dotenv(find_dotenv())
 file_path = './data/moby-dick-lowercase.txt'
 toot_storage_file = 'data/toot_storage.json'
 # Define the user we want to fetch toots from. 
-# Assume that the user is already followed.
+# Assume we follow this user on Mastodon:
 user = "@mobydick@botsin.space"
-translate_service_url = "https://api.openai.com/v1/chat/completions"
 # Fetch the most recent toot ID
-most_recent_toot_id = None
 mastodon_instance_url = 'https://social.vivaldi.net'
 toot_fragment_1 = "        -- Herman Melville (h/t @mobydick@botsin.space)"
-##### 
-#  End constants 
-#####
-
 
 # Define Mastodon API keys, for posting and polling the mobydick account's toots
 mastodon_client_id = os.getenv('MASTODON_CLIENT_ID')
@@ -34,9 +28,16 @@ mastodon_client_secret = os.getenv('MASTODON_CLIENT_SECRET')
 mastodon_access_token = os.getenv('MASTODON_ACCESS_TOKEN')
 # Define OpenAI API keys, for translation
 openai_access_token = os.getenv('OPENAI_ACCESS_TOKEN')
+translate_service_url = "https://api.openai.com/v1/chat/completions"
+##### 
+#  End constants 
+#####
+
+
 
 # Create a dictionary to serve as the persistent storage for the toots:
 toot_storage = {}
+most_recent_toot_id = None
  
 # Create API object
 api = Mastodon(
@@ -47,6 +48,7 @@ api = Mastodon(
 )
 
 def last_n_words(s, n=5) :
+    '''Return the last n words from a toot/string, removing the period at the end if present.'''
     words = s.split()
     if len(words) <= n:
         return s
