@@ -70,22 +70,14 @@ def save_toot_storage(file_path, storage):
     with open(file_path, 'w') as f:
         json.dump(storage, f)
 
-
-toot_storage = load_toot_storage(toot_storage_file)
-
-def translate_to_emoji(url, openai_access_token = "openai_access_token", text = "🐳"):
-    """Translate text to emojis and store the result in toot_storage."""
-    # It should take a string of text and return a string of emojis
-    # Example:
-    # They say that men who have seen the world, thereby become quite at ease in manner, quite self-possessed in company.
-    if text in toot_storage:
-        return toot_storage[text]
+def call_api_for_emoji_translation(url, openai_access_token, text):
+    """Make an API call to translate text to emojis."""
     payload = {
         "model": "gpt-4",
         "messages": [
             {
                 "role": "user",
-                "content": "translate the following text into emojis: '%s"
+                "content": "translate the following text into emojis: '%s'"
             }
         ],
         "temperature": 1,
@@ -97,26 +89,36 @@ def translate_to_emoji(url, openai_access_token = "openai_access_token", text = 
         "frequency_penalty": 0
     }
     payload['messages'][0]['content'] = payload['messages'][0]['content'] % text
-    
+
     payload_json = json.dumps(payload)
     headers = {
         "Authorization": "Bearer %s",
         "Content-Type": "application/json",
-        "Accept" : "application/json"
+        "Accept": "application/json"
     }
     headers['Authorization'] = headers['Authorization'] % openai_access_token
     response = requests.request("POST", url, headers=headers, data=payload_json)
     
+    return response
+
+def translate_to_emoji(url, openai_access_token="openai_access_token", text="🐳"):
+    """Translate text to emojis and store the result in toot_storage."""
+    if text in toot_storage:
+        return toot_storage[text]
+    
+    response = call_api_for_emoji_translation(url, openai_access_token, text)
     emoji_text = response.json()['choices'][0]['message']['content']
+    
     toot_storage[text] = emoji_text
     save_toot_storage(toot_storage_file, toot_storage)
     
-    return emoji_text 
+    return emoji_text
 
 
 # Fetch the most recent toots from the '@mobydick' user
 mobydick = api.account_search(user, following=True)[0]
 
+toot_storage = load_toot_storage(toot_storage_file)
 toots = api.account_statuses(mobydick.id, limit=1, since_id=most_recent_toot_id)
 if toots:
     most_recent_toot = toots[0]
