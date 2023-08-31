@@ -44,6 +44,7 @@ I you have configured an account on the Mastodon social network, a toot with thi
   (Chapter 42: "The Whiteness of The Whale.", Paragraph 31, Sentence 4)
 ```
 
+Note that it is a bit shorter than the shell output.
 Check your account if this was really published to your timeline.
 
 ## Requirements
@@ -52,6 +53,15 @@ Check your account if this was really published to your timeline.
 
 Put all your API credentials (Mastodon API, LLM API) into an `.env` file in the same directory as the script. The script will read the credentials from there. The `dotenv` module is used to read the `.env` file.  
 I dind't include my `.env` file in this repo, so you have to create your own.
+
+The `.env` file should look like this:
+
+```text
+MASTODON_CLIENT_ID='eykSIrJ...'
+MASTODON_CLIENT_SECRET='-regoq...'
+MASTODON_ACCESS_TOKEN='O9F_-UGf...'
+OPENAI_ACCESS_TOKEN='sk-bx...'
+```
 
 ### Helper Scripts
 
