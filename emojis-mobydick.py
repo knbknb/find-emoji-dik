@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pip install wheel bs4 requests python-dotenv Mastodon.py 
 from mastodon import Mastodon
 from bs4 import BeautifulSoup
 import requests

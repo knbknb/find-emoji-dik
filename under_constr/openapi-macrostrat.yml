@@ -1,0 +1,111 @@
+openapi: "3.0.2"
+  
+info: 
+  description: This is the root of the Macrostrat API
+  title: API Title
+  version: "1.0"
+
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /test:
+    get:
+      responses:
+        "200":
+          description: OK
+  /columns:
+    description: Search and summarize columns based on unit properties or geographic location"
+    get:
+      responses:
+        "200":
+          description: OK
+  /sections:
+    description: Summarize units by gap-bound packages"
+    get:
+      responses:
+        "200":
+          description: OK
+  /units:
+    description: all Macrostrat units matching search criteria"
+    get:
+      responses:
+        "200":
+          description: OK
+  /fossils:
+    description: Paleobiology Database (http://paleobiodb.org) collections matched to Macrostrat units"
+    get:
+      responses:
+        "200":
+          description: OK
+  /stats:
+    description: statistics about the Macrostrat database"
+    get:
+      responses:
+        "200":
+          description: OK
+  /paleogeography:
+    description: 'Returns paleogeography geometry from "Wright et al. (2013) Towards community-driven paleogeographic reconstructions: integrating open-access paleogeographic and paleobiology data with plate tectonics. Biogeosciences 10:1529-1541"  If you use this service and provide attribution, you should cite the associated paper via this service.'
+    get:
+      responses:
+        "200":
+          description: OK
+  /geologic_units/map:
+    description: Geologic map units from various data sources"
+    get:
+      responses:
+        "200":
+          description: OK
+  /geologic_units/map/points:
+    get:
+      responses:
+        "200":
+          description: OK
+    description: Query point features from geologic maps"
+  /geologic_units/map/legend:
+    get:
+      responses:
+        "200":
+          description: OK
+    description: Retrieve legends for geologic map units"
+  /measurements:
+    description: measurements"
+    get:
+      responses:
+        "200":
+          description: OK
+  /age_model:
+    description: Get all components of column age models; mostly unit_boundaries but can include other constraints"
+    get:
+      responses:
+        "200":
+          description: OK
+  /eodp:
+    description: eODP Macrostrat Baggage Stripper Import"
+    get:
+      responses:
+        "200":
+          description: OK
+  /defs:
+    description: Routes giving access to standard fields and dictionaries used in Macrostrat"
+    get:
+      responses:
+        "200":
+          description: OK
+  /carto:
+    description: Routes for creating geologic maps"
+    get:
+      responses:
+        "200":
+          description: OK
+  /grids:
+    description: Returns grids with the specified parameters"
+    get:
+      responses:
+        "200":
+          description: OK
+  /mobile:
+    description: Simplified data delivery, ideal for mobile applications"
+    get:
+      responses:
+        "200":
+          description: OK
