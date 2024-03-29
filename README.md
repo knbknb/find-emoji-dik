@@ -7,7 +7,7 @@ The Python script `emojis-mobydick.py` will fetch the most recent toot from bot-
 
 Then the script uses the GPT Large Language Model (LLM) to translate sentence fragments from the novel "Moby Dick" (posted by above-mentioned bot) into Emojis, and post that string of emojis as a new toot to the Mastodon API.
 
-_This little Python project served to refresh my Python skills. It was also instructive for learning-by-doing LLM APIs._
+_This funny little Python project served to refresh my Python skills. I'm learning to interact with LLM APIs, learning by doing._
 
 ## Call and Expected Output
 
@@ -49,6 +49,11 @@ Check your account if this was really published to your timeline.
 
 ## Requirements
 
+- a Mastodon account, an OpenAI account
+- API keys+secret for Mastodon, API key for OpenAI
+- the Mastodon account should follow the mobydick bot
+- a local copy of the book "Moby Dick" in a text file
+
 ### .env File
 
 Put all your API credentials (Mastodon API, LLM API) into an `.env` file in the same directory as the script. The script will read the credentials from there. The `python-dotenv` module is used to read the `.env` file.  
@@ -57,11 +62,14 @@ I didn't include my `.env` file in this repo, so you have to create your own.
 The `.env` file should look like this:
 
 ```text
+# .env-example
 MASTODON_CLIENT_ID='eykSIrJ...'
 MASTODON_CLIENT_SECRET='-regoq...'
 MASTODON_ACCESS_TOKEN='O9F_-UGf...'
 OPENAI_ACCESS_TOKEN='sk-bx...'
 ```
+
+Or use the command line options.
 
 ### Helper Scripts
 
