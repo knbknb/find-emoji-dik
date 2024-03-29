@@ -118,21 +118,30 @@ def main(config):
         
         return emoji_text
 
+    # if the config has a toot, use that, otherwise fetch the most recent toot
+    if config.toot:
+        toots = [config.toot]
+        fragment = config.toot
+        
+    else:
+            
+        # Fetch the most recent toots from the '@mobydick' user.
+        # It is a user we already follow, thus the search is faster.
+        mobydick = api.account_search(config.user, following=True)[0]
 
-    # Fetch the most recent toots from the '@mobydick' user.
-    # It is a user we already follow, thus the search is faster.
-    mobydick = api.account_search(config.user, following=True)[0]
+        toot_storage = load_toot_storage(config.toot_storage_file)
+        toots = api.account_statuses(mobydick.id, limit=1, since_id=None)
 
-    toot_storage = load_toot_storage(config.toot_storage_file)
-    toots = api.account_statuses(mobydick.id, limit=1, since_id=None)
-    if toots:
         most_recent_toot = toots[0]
         # Fetch the text of the toot
         text = most_recent_toot.content
         # strip the html tag(s), if present, e.g. <p>
         soup = BeautifulSoup(text, 'html.parser')
         fragment = soup.get_text()
+
         # find the fragment in the book stored locally
+    if toots:
+    
         toot = fragment
         print(toot)
         # fragment = 'stubb and flask mounted on them'
@@ -170,7 +179,6 @@ def parse_command_line_args():
         parser.add_argument('-s', '--client-secret', type=str, help='Mastodon client secret')
         parser.add_argument('-a', '--access-token', type=str, help='Mastodon access token')
         parser.add_argument('-o', '--openai-token', type=str, help='OpenAI access token')
-        # ignored in main() for now: --toot : TODO
         parser.add_argument('-t', '--toot', type=str, help='The @mobydick toot to search for in the book')
         
         args = parser.parse_args()
