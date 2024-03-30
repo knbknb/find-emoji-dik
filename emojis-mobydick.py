@@ -38,6 +38,73 @@ translate_service_url = "https://api.openai.com/v1/chat/completions"
 #  End constants 
 #####
 
+def last_n_words(s, n=5) :
+    '''Return the last n words from a toot/string, removing the period at the end if present.'''
+    words = s.split()
+    if len(words) <= n:
+        return s
+    else:
+        s = ' '.join(words[-n:])
+        s = s.replace('.', '')
+        return s
+
+def load_toot_storage(file_path):
+    """Load toot storage from a JSON file."""
+    try:
+        with open(file_path, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+def save_toot_storage(file_path, storage):
+    """Save toot storage to a JSON file."""
+    with open(file_path, 'w') as f:
+        json.dump(storage, f)
+
+def call_api_for_emoji_translation(url, openai_access_token, text):
+    """Make an API call to translate text to emojis."""
+    payload = {
+        "model": "gpt-4",
+        "messages": [
+            {
+                "role": "user",
+                "content": "translate the following text into emojis: '%s'"
+            }
+        ],
+        "temperature": 1,
+        "top_p": 1,
+        "n": 1,
+        "stream": False,
+        "max_tokens": 250,
+        "presence_penalty": 0,
+        "frequency_penalty": 0
+    }
+    payload['messages'][0]['content'] = payload['messages'][0]['content'] % text
+
+    payload_json = json.dumps(payload)
+    headers = {
+        "Authorization": "Bearer %s",
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+    headers['Authorization'] = headers['Authorization'] % openai_access_token
+    response = requests.request("POST", url, headers=headers, data=payload_json)
+    
+    return response
+
+def translate_to_emoji(url, toot_storage, openai_access_token="openai_access_token", text="🐳"):
+    """Translate text to emojis and store the result in toot_storage."""
+    if text in toot_storage:
+        return toot_storage[text]
+    
+    response = call_api_for_emoji_translation(url, openai_access_token, text)
+    emoji_text = response.json()['choices'][0]['message']['content']
+    
+    toot_storage[text] = emoji_text
+    save_toot_storage(config.toot_storage_file, toot_storage)
+    
+    return emoji_text
+
 
 def main(config):
     # Create a dictionary to serve as the persistent storage for the toots:
@@ -50,73 +117,6 @@ def main(config):
         access_token=config.mastodon_access_token,
         api_base_url=config.mastodon_instance_url
     )
-
-    def last_n_words(s, n=5) :
-        '''Return the last n words from a toot/string, removing the period at the end if present.'''
-        words = s.split()
-        if len(words) <= n:
-            return s
-        else:
-            s = ' '.join(words[-n:])
-            s = s.replace('.', '')
-            return s
-
-    def load_toot_storage(file_path):
-        """Load toot storage from a JSON file."""
-        try:
-            with open(file_path, 'r') as f:
-                return json.load(f)
-        except FileNotFoundError:
-            return {}
-
-    def save_toot_storage(file_path, storage):
-        """Save toot storage to a JSON file."""
-        with open(file_path, 'w') as f:
-            json.dump(storage, f)
-
-    def call_api_for_emoji_translation(url, openai_access_token, text):
-        """Make an API call to translate text to emojis."""
-        payload = {
-            "model": "gpt-4",
-            "messages": [
-                {
-                    "role": "user",
-                    "content": "translate the following text into emojis: '%s'"
-                }
-            ],
-            "temperature": 1,
-            "top_p": 1,
-            "n": 1,
-            "stream": False,
-            "max_tokens": 250,
-            "presence_penalty": 0,
-            "frequency_penalty": 0
-        }
-        payload['messages'][0]['content'] = payload['messages'][0]['content'] % text
-
-        payload_json = json.dumps(payload)
-        headers = {
-            "Authorization": "Bearer %s",
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        }
-        headers['Authorization'] = headers['Authorization'] % openai_access_token
-        response = requests.request("POST", url, headers=headers, data=payload_json)
-        
-        return response
-
-    def translate_to_emoji(url, openai_access_token="openai_access_token", text="🐳"):
-        """Translate text to emojis and store the result in toot_storage."""
-        if text in toot_storage:
-            return toot_storage[text]
-        
-        response = call_api_for_emoji_translation(url, openai_access_token, text)
-        emoji_text = response.json()['choices'][0]['message']['content']
-        
-        toot_storage[text] = emoji_text
-        save_toot_storage(config.toot_storage_file, toot_storage)
-        
-        return emoji_text
 
     # if the config has a toot, use that, otherwise fetch the most recent toot
     if config.toot:
@@ -152,7 +152,7 @@ def main(config):
         chapter_num, chapter_title, paragraph_num, sentence_num = parser.find_fragment(fragment)
         print(f"Chapter {chapter_num}:{chapter_title}, Paragraph {paragraph_num}, Sentence {sentence_num}")
         # Translate the toot into emojis
-        emoji_toot = translate_to_emoji(translate_service_url, config.openai_access_token, toot) 
+        emoji_toot = translate_to_emoji(translate_service_url, toot_storage, config.openai_access_token, toot) 
         # if found in book, add the citation
         emoji_toot = toot + ":\n" + emoji_toot + "\n" + toot_fragment_1
         # print(emoji_toot)
