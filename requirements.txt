@@ -1,0 +1,6 @@
+beautifulsoup4==4.12.3
+fitz==0.0.1.dev2
+Mastodon.py==1.8.1
+Pillow==10.2.0
+python-dotenv==1.0.1
+Requests==2.31.0

@@ -35,6 +35,7 @@ class EmojiTranslator:
         toots = self.api.account_statuses(mobydick.id, limit=1, since_id=self.most_recent_toot_id)
         if toots:
             # ... [most of the procedural steps from the script] ...
+            pass
             
             # For methods that were formerly functions, adjust the call to use self, e.g.:
             # emoji_toot = self.translate_to_emoji(self.translate_service_url, self.openai_access_token, toot)
