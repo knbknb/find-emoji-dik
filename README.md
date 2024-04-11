@@ -53,6 +53,7 @@ Check your account if this was really published to your timeline.
 - API keys+secret for Mastodon, API key for OpenAI
 - the Mastodon account should follow the mobydick bot
 - a local copy of the book "Moby Dick" in a text file
+- Python: see `requirements.txt` file
 
 ### .env File
 
