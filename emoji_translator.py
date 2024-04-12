@@ -1,10 +1,6 @@
 from mastodon import Mastodon
-from bs4 import BeautifulSoup
-import requests
 from dotenv import load_dotenv, find_dotenv
 import os
-import json
-from moby_dick_parser import MobyDickParser
 
 class EmojiTranslator:
     def __init__(self):
@@ -28,18 +24,10 @@ class EmojiTranslator:
             api_base_url=self.mastodon_instance_url
         )
 
-    # ... [move the method definitions (e.g., `load_toot_storage`, `save_toot_storage`, etc.) here] ...
-
     def run(self):
         mobydick = self.api.account_search(self.user, following=True)[0]
-        toots = self.api.account_statuses(mobydick.id, limit=1, since_id=self.most_recent_toot_id)
-        if toots:
-            # ... [most of the procedural steps from the script] ...
-            pass
-            
-            # For methods that were formerly functions, adjust the call to use self, e.g.:
-            # emoji_toot = self.translate_to_emoji(self.translate_service_url, self.openai_access_token, toot)
-
+        self.api.account_statuses(mobydick.id, limit=1, since_id=self.most_recent_toot_id)
+        
 if __name__ == '__main__':
     translator = EmojiTranslator()
     translator.run()

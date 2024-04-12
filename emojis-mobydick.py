@@ -92,16 +92,10 @@ def call_api_for_emoji_translation(url, openai_access_token, text):
     
     return response
 
-def translate_to_emoji(url, toot_storage, openai_access_token="openai_access_token", text="🐳"):
+def translate_to_emoji(url, openai_access_token="openai_access_token", text="🐳"):
     """Translate text to emojis and store the result in toot_storage."""
-    if text in toot_storage:
-        return toot_storage[text]
-    
     response = call_api_for_emoji_translation(url, openai_access_token, text)
     emoji_text = response.json()['choices'][0]['message']['content']
-    
-    toot_storage[text] = emoji_text
-    save_toot_storage(config.toot_storage_file, toot_storage)
     
     return emoji_text
 
@@ -118,7 +112,9 @@ def main(config):
         api_base_url=config.mastodon_instance_url
     )
 
-    # if the config has a toot, use that, otherwise fetch the most recent toot
+    # if the command-line has a "toot" argument with any string, use that, 
+    # otherwise fetch the most recent toot
+    toot_storage = load_toot_storage(config.toot_storage_file)
     if config.toot:
         toots = [config.toot]
         fragment = config.toot
@@ -129,7 +125,6 @@ def main(config):
         # It is a user we already follow, thus the search is faster.
         mobydick = api.account_search(config.user, following=True)[0]
 
-        toot_storage = load_toot_storage(config.toot_storage_file)
         toots = api.account_statuses(mobydick.id, limit=1, since_id=None)
 
         most_recent_toot = toots[0]
@@ -151,8 +146,15 @@ def main(config):
         print(f"Last {n_words} words: {fragment}")
         chapter_num, chapter_title, paragraph_num, sentence_num = parser.find_fragment(fragment)
         print(f"Chapter {chapter_num}:{chapter_title}, Paragraph {paragraph_num}, Sentence {sentence_num}")
-        # Translate the toot into emojis
-        emoji_toot = translate_to_emoji(translate_service_url, toot_storage, config.openai_access_token, toot) 
+        if toot in toot_storage:
+            return
+        else:
+            # Translate the toot into emojis
+            emoji_toot = translate_to_emoji(translate_service_url, config.openai_access_token, toot)             
+            # save toot in storage
+            toot_storage[toot] = emoji_toot
+            save_toot_storage(config.toot_storage_file, toot_storage)
+    
         # if found in book, add the citation
         emoji_toot = toot + ":\n" + emoji_toot + "\n" + toot_fragment_1
         # print(emoji_toot)
@@ -160,10 +162,13 @@ def main(config):
             print("Found in book!")
             emoji_toot = f"{emoji_toot}\n(Chapter {chapter_num}: \"{chapter_title}\", Paragraph {paragraph_num}, Sentence {sentence_num})"
         # Post the emoji toot
-        if emoji_toot:
+        if emoji_toot and not config.dry_run:
             print(emoji_toot)
             #print("posted")
             api.toot(emoji_toot)
+        elif config.dry_run:
+            print(emoji_toot)
+            print("######### Dry run, not posting emoji_toot to Mastodon. #########")
         else:
             print("No emoji toot found.")
     # Wait for a while before polling again
@@ -180,6 +185,7 @@ def parse_command_line_args():
         parser.add_argument('-a', '--access-token', type=str, help='Mastodon access token')
         parser.add_argument('-o', '--openai-token', type=str, help='OpenAI access token')
         parser.add_argument('-t', '--toot', type=str, help='The @mobydick toot to search for in the book')
+        parser.add_argument('-d', '--dry-run', action='store_true', default=False, help='Do NOT really post the toot to mastodon network')
         
         args = parser.parse_args()
         return args
@@ -204,6 +210,7 @@ def create_config(args):
     openai_access_token = args.openai_token     if args.openai_token  else os.getenv('OPENAI_ACCESS_TOKEN')
 
     toot = args.toot                            if args.toot else None
+    dry_run = args.dry_run                      if args.dry_run else False
     toot_storage_file = 'data/toot_storage.json'
     
     class Config:
@@ -220,6 +227,7 @@ def create_config(args):
         'mastodon_access_token': mastodon_access_token,
         'openai_access_token': openai_access_token,
         'toot': toot,
+        'dry_run': dry_run
     }
     config = Config(**config_dict)
     return config
