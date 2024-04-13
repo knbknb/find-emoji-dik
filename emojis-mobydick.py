@@ -6,173 +6,24 @@
 # post the emoji toot on Mastodon. also post the citation from the book.
 # write it to a file for later reference. write it to the console.
 # Optionally read in a toot from the command line.
-#
+# Optionally set --dry-run flag to avoid posting to Mastodon.
+
 # Needs:
 #    - a mastodon account, an OpenAI account
 #    - API keys+secret for mastodon, API key for OpenAI
 #    - the mastodon account should follow the mobydick bot
-#    - a local copy of the book "Moby Dick" in a text file
+#    - a local copy of the book "Moby Dick" in a text file; coverted to lowercase
+#    - A venv that can resolve the Mastodon.py library
 
 # pip install wheel bs4 requests python-dotenv Mastodon.py 
-from mastodon import Mastodon
-from bs4 import BeautifulSoup
-import requests
+
 from dotenv import load_dotenv, find_dotenv
 import os
-import json
-from moby_dick_parser import MobyDickParser
 import argparse
+from emoji_translator import EmojiTranslator # loads moby_dick_parser
 
 # Load .env file with API keys and credentials
 load_dotenv(find_dotenv())
-
-##### 
-#  Some constants needed in various places inside code
-#####
-
-#
-toot_fragment_1 = "        -- Herman Melville (h/t @mobydick@botsin.space)"
-
-translate_service_url = "https://api.openai.com/v1/chat/completions"
-##### 
-#  End constants 
-#####
-
-def last_n_words(s, n=5) :
-    '''Return the last n words from a toot/string, removing the period at the end if present.'''
-    words = s.split()
-    if len(words) <= n:
-        return s
-    else:
-        s = ' '.join(words[-n:])
-        s = s.replace('.', '')
-        return s
-
-def load_toot_storage(file_path):
-    """Load toot storage from a JSON file."""
-    try:
-        with open(file_path, 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {}
-
-def save_toot_storage(file_path, storage):
-    """Save toot storage to a JSON file."""
-    with open(file_path, 'w') as f:
-        json.dump(storage, f)
-
-def call_api_for_emoji_translation(url, openai_access_token, text):
-    """Make an API call to translate text to emojis."""
-    payload = {
-        "model": "gpt-4",
-        "messages": [
-            {
-                "role": "user",
-                "content": "translate the following text into emojis: '%s'"
-            }
-        ],
-        "temperature": 1,
-        "top_p": 1,
-        "n": 1,
-        "stream": False,
-        "max_tokens": 250,
-        "presence_penalty": 0,
-        "frequency_penalty": 0
-    }
-    payload['messages'][0]['content'] = payload['messages'][0]['content'] % text
-
-    payload_json = json.dumps(payload)
-    headers = {
-        "Authorization": "Bearer %s",
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-    }
-    headers['Authorization'] = headers['Authorization'] % openai_access_token
-    response = requests.request("POST", url, headers=headers, data=payload_json)
-    
-    return response
-
-def translate_to_emoji(url, openai_access_token="openai_access_token", text="🐳"):
-    """Translate text to emojis and store the result in toot_storage."""
-    response = call_api_for_emoji_translation(url, openai_access_token, text)
-    emoji_text = response.json()['choices'][0]['message']['content']
-    
-    return emoji_text
-
-
-def main(config):
-    # Create a dictionary to serve as the persistent storage for the toots:
-    toot_storage = {}
-    
-    # Create API object
-    api = Mastodon(
-        client_id=config.mastodon_client_id,
-        client_secret=config.mastodon_client_secret,
-        access_token=config.mastodon_access_token,
-        api_base_url=config.mastodon_instance_url
-    )
-
-    # if the command-line has a "toot" argument with any string, use that, 
-    # otherwise fetch the most recent toot
-    toot_storage = load_toot_storage(config.toot_storage_file)
-    if config.toot:
-        toots = [config.toot]
-        fragment = config.toot
-        
-    else:
-            
-        # Fetch the most recent toots from the '@mobydick' user.
-        # It is a user we already follow, thus the search is faster.
-        mobydick = api.account_search(config.user, following=True)[0]
-
-        toots = api.account_statuses(mobydick.id, limit=1, since_id=None)
-
-        most_recent_toot = toots[0]
-        # Fetch the text of the toot
-        text = most_recent_toot.content
-        # strip the html tag(s), if present, e.g. <p>
-        soup = BeautifulSoup(text, 'html.parser')
-        fragment = soup.get_text()
-
-        # find the fragment in the book stored locally
-    if toots:
-    
-        toot = fragment
-        print(toot)
-        # fragment = 'stubb and flask mounted on them'
-        n_words = 4
-        fragment = last_n_words(fragment.lower(), n_words)
-        parser = MobyDickParser(config.file_path)
-        print(f"Last {n_words} words: {fragment}")
-        chapter_num, chapter_title, paragraph_num, sentence_num = parser.find_fragment(fragment)
-        print(f"Chapter {chapter_num}:{chapter_title}, Paragraph {paragraph_num}, Sentence {sentence_num}")
-        if toot in toot_storage:
-            return
-        else:
-            # Translate the toot into emojis
-            emoji_toot = translate_to_emoji(translate_service_url, config.openai_access_token, toot)             
-            # save toot in storage
-            toot_storage[toot] = emoji_toot
-            save_toot_storage(config.toot_storage_file, toot_storage)
-    
-        # if found in book, add the citation
-        emoji_toot = toot + ":\n" + emoji_toot + "\n" + toot_fragment_1
-        # print(emoji_toot)
-        if chapter_num:
-            print("Found in book!")
-            emoji_toot = f"{emoji_toot}\n(Chapter {chapter_num}: \"{chapter_title}\", Paragraph {paragraph_num}, Sentence {sentence_num})"
-        # Post the emoji toot
-        if emoji_toot and not config.dry_run:
-            print(emoji_toot)
-            #print("posted")
-            api.toot(emoji_toot)
-        elif config.dry_run:
-            print(emoji_toot)
-            print("######### Dry run, not posting emoji_toot to Mastodon. #########")
-        else:
-            print("No emoji toot found.")
-    # Wait for a while before polling again
-    #time.sleep(60)
 
 def parse_command_line_args():
         """Parse command line arguments."""
@@ -235,4 +86,5 @@ def create_config(args):
 if __name__ == "__main__":
     args = parse_command_line_args()
     config = create_config(args)
-    main(config)
+    translator = EmojiTranslator()
+    translator.run(config)
