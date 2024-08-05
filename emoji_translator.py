@@ -57,7 +57,7 @@ class EmojiTranslator:
     def call_api_for_emoji_translation(self, url, openai_access_token, text):
         """Make an API call to translate text to emojis."""
         payload = {
-            "model": "gpt-4",
+            "model": "gpt-4o",
             "messages": [
                 {
                     "role": "user",
@@ -68,7 +68,7 @@ class EmojiTranslator:
             "top_p": 1,
             "n": 1,
             "stream": False,
-            "max_tokens": 250,
+            "max_tokens": 450,
             "presence_penalty": 0,
             "frequency_penalty": 0
         }
@@ -145,8 +145,9 @@ class EmojiTranslator:
                 print(f"Chapter {chapter_num}:{chapter_title}, Paragraph {paragraph_num}, Sentence {sentence_num}")
                 emoji_toot = self.translate_to_emoji(self.translate_service_url, config.openai_access_token, toot)             
                 # save toot in storage
-                toot_storage[toot] = emoji_toot
-                self.save_toot_storage(config.toot_storage_file, toot_storage)
+                if not config.dry_run:
+                    toot_storage[toot] = emoji_toot
+                    self.save_toot_storage(config.toot_storage_file, toot_storage)
         
             # if found in book, add the citation
             emoji_toot = toot + ":\n" + emoji_toot + "\n" + self.toot_fragment_1
@@ -161,7 +162,7 @@ class EmojiTranslator:
                 api.toot(emoji_toot)
             elif config.dry_run:
                 print(emoji_toot)
-                print("######### Dry run, not posting emoji_toot to Mastodon. #########")
+                print("######### Dry run, not posting emoji_toot to Mastodon, not saving to toot-storage. #########")
             else:
                 print("No emoji toot found. OpenAI API call failed?")
         # Wait for a while before polling again

@@ -13,6 +13,7 @@ _This funny little Python project served to refresh my Python skills. I'm learni
 
 ### CLI Call
 
+    workon mastodon  # my virtualenv, created with virtualenvwrapper
     ./emojis-mobydick.py 
 
 (Read toots from Mastodon, parse most recent toot; post fragment to LLM API, let LLM translate to Emojis, process LLM response, post fragment+Emojis to own account)

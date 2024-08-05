@@ -54,7 +54,7 @@ class MobyDickParser:
 
 
 if __name__ == "__main__":
-    file_path = './data/moby-dick.txt'
+    file_path = './data/moby-dick-lowercase.txt'
     parser = MobyDickParser(file_path)
     
     fragment = input("Please enter a sentence fragment to search for: ")
