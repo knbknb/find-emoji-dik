@@ -53,7 +53,7 @@ Check your account if this was really published to your timeline.
 - a Mastodon account, an OpenAI account
 - API keys+secret for Mastodon, API key for OpenAI
 - the Mastodon account should follow the mobydick bot
-- a local copy of the book "Moby Dick" in a text file
+- a local copy of the book "Moby Dick" in a text file. Here, `data/moby-dick-lowercase.txt`.
 - Python: see `requirements.txt` file
 
 ### .env File
@@ -80,9 +80,10 @@ Take a look at the files in the `static/` directory of this repo, e.g., to see h
 ## TODO
 
 - Keep refactoring the code, e.g., to make it more modular.
-- Make it a script that polls mastodon account of the @mobydick  bot account every n minutes, and posts new toots to our account.
-  - Make sure it doesn't post the same toot several times.
-  - Clearly handle edge-case when a text fragment was not found in the book (e.g. when punctuation or whitespace differences are interfering)
+- ~~Make it a script that polls mastodon account of the @mobydick  bot account every n minutes, and posts new toots to our account.~~
+  - ~~Make sure it doesn't post the same toot several times.~~
+  - ~~Clearly handle edge-case when a text fragment was not found in the book (e.g. when punctuation or whitespace differences are interfering)~~
   - Properly reply to the original toot, so that the thread is kept intact.
 - Rewrite this script with other LLMs, with other books, with other bots.
 - Translate the whole book into emojis, and post it to all social networks.
+- Rewrite this such that it uses an agentic architecture, e.g. with a central agent that distributes tasks to worker agents.
