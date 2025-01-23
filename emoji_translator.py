@@ -57,11 +57,11 @@ class EmojiTranslator:
     def call_api_for_emoji_translation(self, url, openai_access_token, text):
         """Make an API call to translate text to emojis."""
         payload = {
-            "model": "gpt-4o",
+            "model": "gpt-4o-mini",
             "messages": [
                 {
                     "role": "user",
-                    "content": "translate the following text into emojis: '%s'"
+                    "content": "translate the following text into emojis: '%s'. I need only the emojis, on a single line. Do not respond with text."
                 }
             ],
             "temperature": 1,
