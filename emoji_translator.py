@@ -10,12 +10,24 @@ import logging
 
 class EmojiTranslator:
     def __init__(self):
-        #logging.basicConfig(level=logging.DEBUG)
+        self.literature_accounts = [
+            {
+                "user": "@mobydick@mastodon.art",
+                "author": "Herman Melville",
+                "work": "Moby Dick",
+                "source_file": "./data/moby-dick-lowercase.txt"
+            },
+            {
+                "user": "@SamuelPepys@mastodon.social",
+                "author": "Samuel Pepys",
+                "work": "The Diary",
+                "source_file": None
+            }
+        ]
         load_dotenv(find_dotenv())
         load_dotenv(find_dotenv())
         self.file_path = './data/moby-dick-lowercase.txt'
         self.toot_storage_file = 'data/toot_storage.json'
-        #self.user = "@mobydick@botsin.space"
         self.user = "@mobydick@mastodon.art"
         self.mastodon_instance_url = 'https://social.vivaldi.net'
         self.toot_fragment_1 = "        -- Herman Melville (h/t @mobydick@mastodon.art)"
@@ -26,7 +38,6 @@ class EmojiTranslator:
         self.n_words = 4  # trying to match this many words of a @mobydick toot in book
                 
         self.translate_service_url = "https://api.openai.com/v1/chat/completions"
-        #self.toot_storage = self.load_toot_storage(self.toot_storage_file)
         self.most_recent_toot_id = None
         self.api = Mastodon(
             client_id=self.mastodon_client_id,
@@ -76,7 +87,6 @@ class EmojiTranslator:
             "presence_penalty": 0,
             "frequency_penalty": 0
         }
-        # logging.debug("Payload: %s", payload)
         payload['messages'][0]['content'] = payload['messages'][0]['content'] % text
 
         payload_json = json.dumps(payload)
@@ -117,59 +127,64 @@ class EmojiTranslator:
             fragment = config.toot
             
         else:
+            for account in self.literature_accounts:
+                user = account['user']
+                author = account['author']
+                work = account['work']
+                source_file = account['source_file']
                 
-            # Fetch the most recent toots from the '@mobydick' user.
-            # It is a user we already follow, thus the search is faster.
-            mobydick = api.account_search(config.user, following=True)[0]
-
-            toots = api.account_statuses(mobydick.id, limit=1, since_id=None)
-
-            most_recent_toot = toots[0]
-            # Fetch the text of the toot
-            text = most_recent_toot.content
-            # strip the html tag(s), if present, e.g. <p>
-            soup = BeautifulSoup(text, 'html.parser')
-            fragment = soup.get_text()
-
-            # find the fragment in the book stored locally
-        if toots:
-        
-            toot = fragment
-            if toot in toot_storage and config.dry_run:
-                print("########## Toot already in storage. Skipping. #########")
-                return
-            elif toot in toot_storage:
-                return
-            else:
-                fragment = self.last_n_words(fragment.lower(), self.n_words)
-                parser = MobyDickParser(config.file_path)
-                chapter_num, chapter_title, paragraph_num, sentence_num = parser.find_fragment(fragment)
+                # Fetch account info
+                account_info = api.account_search(user, following=True)[0]
                 
-                # Translate the toot into emojis
-                print(f"Last {self.n_words} words: {fragment}")
-                print(f"Chapter {chapter_num}:{chapter_title}, Paragraph {paragraph_num}, Sentence {sentence_num}")
-                emoji_toot = self.translate_to_emoji(self.translate_service_url, config.openai_access_token, toot)             
-                # save toot in storage
+                toots = api.account_statuses(account_info.id, limit=1, since_id=None)
+                
+                if not toots:
+                    continue
+                    
+                most_recent_toot = toots[0]
+                text = most_recent_toot.content
+                soup = BeautifulSoup(text, 'html.parser')
+                fragment = soup.get_text()
+
+                toot = fragment
+                if toot in toot_storage and config.dry_run:
+                    print(f"########## Toot from {user} already in storage. Skipping. #########")
+                    continue
+                elif toot in toot_storage:
+                    continue
+                    
+                # Citation based on account
+                citation = f"        -- {author} (h/t {user})"
+                
+                # If source file exists, try to find the fragment in it
+                chapter_info = ""
+                if source_file:
+                    fragment = self.last_n_words(fragment.lower(), self.n_words)
+                    parser = MobyDickParser(source_file)
+                    chapter_num, chapter_title, paragraph_num, sentence_num = parser.find_fragment(fragment)
+                    print(f"Last {self.n_words} words: {fragment}")
+                    if chapter_num:
+                        print(f"Found in {work}!")
+                        chapter_info = f"\n({work} - Chapter {chapter_num}: \"{chapter_title}\", Paragraph {paragraph_num}, Sentence {sentence_num})"
+
+                # Translate and post
+                emoji_toot = self.translate_to_emoji(self.translate_service_url, config.openai_access_token, toot)
+                
                 if not config.dry_run:
                     toot_storage[toot] = emoji_toot
                     self.save_toot_storage(config.toot_storage_file, toot_storage)
-        
-            # if found in book, add the citation
-            emoji_toot = toot + ":\n" + emoji_toot + "\n" + self.toot_fragment_1
-            # print(emoji_toot)
-            if chapter_num:
-                print("Found in book!")
-                emoji_toot = f"{emoji_toot}\n(Chapter {chapter_num}: \"{chapter_title}\", Paragraph {paragraph_num}, Sentence {sentence_num})"
-            # Post the emoji toot
-            if emoji_toot and not config.dry_run:
-                print(emoji_toot)
-                #print("posted")
-                api.toot(emoji_toot)
-            elif config.dry_run:
-                print(emoji_toot)
-                print("######### Dry run, not posting emoji_toot to Mastodon, not saving to toot-storage. #########")
-            else:
-                print("No emoji toot found. OpenAI API call failed?")
+                
+                # Format the final toot
+                emoji_toot = f"{toot}:\n{emoji_toot}\n{citation}{chapter_info}"
+                    
+                if emoji_toot and not config.dry_run:
+                    print(emoji_toot)
+                    api.toot(emoji_toot)
+                elif config.dry_run:
+                    print(emoji_toot)
+                    print(f"######### Dry run, not posting emoji_toot from {user} to Mastodon #########")
+                else:
+                    print("No emoji toot found. OpenAI API call failed?")
         # Wait for a while before polling again
         #time.sleep(60)        
 
