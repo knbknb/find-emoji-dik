@@ -6,15 +6,19 @@ from dotenv import load_dotenv, find_dotenv
 import os
 import requests
 import json
+import logging
 
 class EmojiTranslator:
     def __init__(self):
+        #logging.basicConfig(level=logging.DEBUG)
+        load_dotenv(find_dotenv())
         load_dotenv(find_dotenv())
         self.file_path = './data/moby-dick-lowercase.txt'
         self.toot_storage_file = 'data/toot_storage.json'
-        self.user = "@mobydick@botsin.space"
+        #self.user = "@mobydick@botsin.space"
+        self.user = "@mobydick@mastodon.art"
         self.mastodon_instance_url = 'https://social.vivaldi.net'
-        self.toot_fragment_1 = "        -- Herman Melville (h/t @mobydick@botsin.space)"
+        self.toot_fragment_1 = "        -- Herman Melville (h/t @mobydick@mastodon.art)"
         self.mastodon_client_id = os.getenv('MASTODON_CLIENT_ID')
         self.mastodon_client_secret = os.getenv('MASTODON_CLIENT_SECRET')
         self.mastodon_access_token = os.getenv('MASTODON_ACCESS_TOKEN')
@@ -57,7 +61,7 @@ class EmojiTranslator:
     def call_api_for_emoji_translation(self, url, openai_access_token, text):
         """Make an API call to translate text to emojis."""
         payload = {
-            "model": "gpt-4o-mini",
+            "model": "gpt-4o",
             "messages": [
                 {
                     "role": "user",
@@ -72,6 +76,7 @@ class EmojiTranslator:
             "presence_penalty": 0,
             "frequency_penalty": 0
         }
+        # logging.debug("Payload: %s", payload)
         payload['messages'][0]['content'] = payload['messages'][0]['content'] % text
 
         payload_json = json.dumps(payload)

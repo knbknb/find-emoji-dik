@@ -3,7 +3,7 @@
 
 Simple Command-Line Script for Bash/Linux.
 
-The Python script `emojis-mobydick.py` will fetch the most recent toot from bot-account [@mobydick@botsin.space](https://social.vivaldi.net/@mobydick@botsin.space).
+The Python script `emojis-mobydick.py` will fetch the most recent toot from bot-account [@mobydick@mastodon.art](https://social.vivaldi.net/@mobydick@botsin.space).
 
 Then the script uses the GPT Large Language Model (LLM) to translate sentence fragments from the novel "Moby Dick" (posted by above-mentioned bot) into Emojis, and post that string of emojis as a new toot to the Mastodon API.
 
@@ -30,7 +30,7 @@ Shell output
   
   And of all these things the Albino whale was the symbol.:
   🔱🧩🎭📩⚪🐋🔣🎴
-        -- Herman Melville (h/t @mobydick@botsin.space)
+        -- Herman Melville (h/t @mobydick@mastodon.art)
   (Chapter 42: "The Whiteness of The Whale.", Paragraph 31, Sentence 4)
 ```
 
@@ -41,7 +41,7 @@ I you have configured an account on the Mastodon social network, a toot with thi
 ```text
   And of all these things the Albino whale was the symbol.:
   🔱🧩🎭📩⚪🐋🔣🎴
-        -- Herman Melville (h/t @mobydick@botsin.space)
+        -- Herman Melville (h/t @mobydick@mastodon.art)
   (Chapter 42: "The Whiteness of The Whale.", Paragraph 31, Sentence 4)
 ```
 

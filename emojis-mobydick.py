@@ -47,7 +47,7 @@ def create_config(args):
     
     # Define the user we want to fetch toots from. 
     # Assume we follow this user on Mastodon:
-    user = args.user                            if args.user else "@mobydick@botsin.space"
+    user = args.user                            if args.user else "@mobydick@mastodon.art"
     
     # Set the Mastodon instance URL
     mastodon_instance_url = args.instance       if args.instance else 'https://social.vivaldi.net'
