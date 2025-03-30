@@ -87,3 +87,7 @@ Take a look at the files in the `static/` directory of this repo, e.g., to see h
 - Rewrite this script with other LLMs, with other books, with other bots.
 - Translate the whole book into emojis, and post it to all social networks.
 - Rewrite this such that it uses an agentic architecture, e.g. with a central agent that distributes tasks to worker agents.
+
+## Tests 
+
+Test with `pytest-3 unittest_mobydick.py` (under construction)
