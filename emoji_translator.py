@@ -6,7 +6,7 @@ from dotenv import load_dotenv, find_dotenv
 import os
 import requests
 import json
-import logging
+# import logging
 
 class EmojiTranslator:
     def __init__(self):
@@ -25,12 +25,10 @@ class EmojiTranslator:
             }
         ]
         load_dotenv(find_dotenv())
-        load_dotenv(find_dotenv())
         self.file_path = './data/moby-dick-lowercase.txt'
         self.toot_storage_file = 'data/toot_storage.json'
-        self.user = "@mobydick@mastodon.art"
+        self.user = "@mobydick@mastodon.art" # will be overwritten
         self.mastodon_instance_url = 'https://social.vivaldi.net'
-        self.toot_fragment_1 = "        -- Herman Melville (h/t @mobydick@mastodon.art)"
         self.mastodon_client_id = os.getenv('MASTODON_CLIENT_ID')
         self.mastodon_client_secret = os.getenv('MASTODON_CLIENT_SECRET')
         self.mastodon_access_token = os.getenv('MASTODON_ACCESS_TOKEN')
@@ -38,13 +36,7 @@ class EmojiTranslator:
         self.n_words = 4  # trying to match this many words of a @mobydick toot in book
                 
         self.translate_service_url = "https://api.openai.com/v1/chat/completions"
-        self.most_recent_toot_id = None
-        self.api = Mastodon(
-            client_id=self.mastodon_client_id,
-            client_secret=self.mastodon_client_secret,
-            access_token=self.mastodon_access_token,
-            api_base_url=self.mastodon_instance_url
-        )
+        
 
     def last_n_words(self, s, n=5) :
         '''Return the last n words from a toot/string, removing the period at the end if present.'''
@@ -118,6 +110,8 @@ class EmojiTranslator:
             access_token=config.mastodon_access_token,
             api_base_url=config.mastodon_instance_url
         )
+        if config.dry_run:
+            print(api.retrieve_mastodon_version())
 
         # if the command-line has a "toot" argument with any string, use that, 
         # otherwise fetch the most recent toot
@@ -136,8 +130,9 @@ class EmojiTranslator:
                 # Fetch account info
                 account_info = api.account_search(user, following=True)[0]
                 
-                toots = api.account_statuses(account_info.id, limit=1, since_id=None)
-                
+                toots = api.account_statuses(account_info.id, limit=1)
+                if config.dry_run:
+                    print(f"########## {user} toot: {toots[0]} #########")
                 if not toots:
                     continue
                     
