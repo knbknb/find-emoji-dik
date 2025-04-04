@@ -19,7 +19,7 @@ CHAPTER 3. The Spouter-Inn
 Entering that gable-ended Spouter-Inn, you found yourself in a wide, low, straggling entry with old-fashioned wainscots, reminding one of the bulwarks of some condemned old craft.
 
 """
-        self.test_file_path = "test_moby_dick.txt"
+        self.test_file_path = "data/test_moby_dick.txt"
         with open(self.test_file_path, "w") as f:
             f.write(self.test_file_content)
         
