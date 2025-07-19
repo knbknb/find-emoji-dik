@@ -24,11 +24,11 @@ Then the script uses a Large Language Model (LLM) to translate sentence fragment
 ### CLI Call
 
     workon mastodon  # my virtualenv, created with virtualenvwrapper
-    ./emojis-mobydick.py
+    ./src/emojis-mobydick.py
 
 You can fetch a random snippet from a static text file with:
 
-    ./emojis-mobydick.py --static-file path/to/file.txt --signature "Mark Twain"
+    ./src/emojis-mobydick.py --static-file path/to/file.txt --signature "Mark Twain"
 
 (Read toots from Mastodon, parse most recent toot; post fragment to LLM API, let LLM translate to Emojis, process LLM response, post fragment+Emojis to own account)
 
@@ -93,14 +93,16 @@ Take a look at the files in the `static/` directory of this repo, e.g., to see h
 
 ## TODO
 
-- Keep refactoring the code, e.g., to make it more modular.
+- ~~Keep refactoring the code, e.g., to make it more modular.~~
 - ~~Make it a script that polls mastodon account of the @mobydick  bot account every n minutes, and posts new toots to our account.~~
   - ~~Make sure it doesn't post the same toot several times.~~
   - ~~Clearly handle edge-case when a text fragment was not found in the book (e.g. when punctuation or whitespace differences are interfering)~~
   - Properly reply to the original toot, so that the thread is kept intact.
+- ~~Read from other literature accounts.~~
+- ~~Include some literary works as static files that are read from the filesystem.~~
 - Rewrite this script with other LLMs, ~~with other books, with other literature bots~~.
-- Translate the whole book into emojis, and post it to all social networks.
-- Rewrite this such that it uses an agentic architecture, e.g. with a central agent that distributes tasks to worker agents.
+- Translate whole books into emojis, and post them to some social networks.
+- Rewrite this such that it uses an agentic architecture, e.g. with a central agent that distributes tasks to worker agents, posting even more emojified quotes to all social networks.
 
 ## Tests
 
