@@ -24,7 +24,11 @@ Then the script uses a Large Language Model (LLM) to translate sentence fragment
 ### CLI Call
 
     workon mastodon  # my virtualenv, created with virtualenvwrapper
-    ./emojis-mobydick.py 
+    ./emojis-mobydick.py
+
+You can fetch a random snippet from a static text file with:
+
+    ./emojis-mobydick.py --static-file path/to/file.txt --signature "Mark Twain"
 
 (Read toots from Mastodon, parse most recent toot; post fragment to LLM API, let LLM translate to Emojis, process LLM response, post fragment+Emojis to own account)
 
