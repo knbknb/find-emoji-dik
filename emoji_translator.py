@@ -17,10 +17,16 @@ class EmojiTranslator:
                 "work": "Moby Dick",
                 "source_file": "./data/moby-dick-lowercase.txt"
             },
+            # {
+            #     "user": "@SamuelPepys@mastodon.social",
+            #     "author": "Samuel Pepys",
+            #     "work": "The Diary",
+            #     "source_file": None
+            # },
             {
-                "user": "@SamuelPepys@mastodon.social",
-                "author": "Samuel Pepys",
-                "work": "The Diary",
+                "user": "@ShakespeareQuotes@botsin.space",
+                "author": "William Shakespeare",
+                "work": "Collected Works",
                 "source_file": None
             }
         ]
