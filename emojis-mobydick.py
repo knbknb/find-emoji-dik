@@ -20,7 +20,9 @@
 from dotenv import load_dotenv, find_dotenv
 import os
 import argparse
-from emoji_translator import EmojiTranslator # loads moby_dick_parser
+from emoji_translator import EmojiTranslator  # loads moby_dick_parser
+from static_fileparser import StaticFileParser
+from mastodon import Mastodon
 
 # Load .env file with API keys and credentials
 load_dotenv(find_dotenv())
@@ -36,6 +38,7 @@ def parse_command_line_args():
         parser.add_argument('-a', '--access-token', type=str, help='Mastodon access token')
         parser.add_argument('-o', '--openai-token', type=str, help='OpenAI access token')
         parser.add_argument('-t', '--toot', type=str, help='The @mobydick toot to search for in the book')
+        parser.add_argument('--static-file', type=str, help='Static text file to fetch a random snippet from')
         parser.add_argument('-d', '--dry-run', action='store_true', default=False, help='Do NOT really post the toot to mastodon network')
         
         args = parser.parse_args()
@@ -61,6 +64,7 @@ def create_config(args):
     openai_access_token = args.openai_token     if args.openai_token  else os.getenv('OPENAI_ACCESS_TOKEN')
 
     toot = args.toot                            if args.toot else None
+    static_file = args.static_file              if args.static_file else None
     dry_run = args.dry_run                      if args.dry_run else False
     toot_storage_file = 'data/toot_storage.json'
     
@@ -78,6 +82,7 @@ def create_config(args):
         'mastodon_access_token': mastodon_access_token,
         'openai_access_token': openai_access_token,
         'toot': toot,
+        'static_file': static_file,
         'dry_run': dry_run
     }
     config = Config(**config_dict)
@@ -87,4 +92,22 @@ if __name__ == "__main__":
     args = parse_command_line_args()
     config = create_config(args)
     translator = EmojiTranslator()
-    translator.run(config)
+
+    if config.static_file:
+        parser = StaticFileParser(config.static_file)
+        snippet = parser.get_random_snippet()
+        emoji_text = translator.translate_to_emoji(translator.translate_service_url,
+                                                  config.openai_access_token,
+                                                  snippet)
+        toot_text = f"{snippet}:\n{emoji_text}"
+        print(toot_text)
+        if not config.dry_run:
+            api = Mastodon(
+                client_id=config.mastodon_client_id,
+                client_secret=config.mastodon_client_secret,
+                access_token=config.mastodon_access_token,
+                api_base_url=config.mastodon_instance_url,
+            )
+            api.toot(toot_text)
+    else:
+        translator.run(config)
