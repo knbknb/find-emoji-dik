@@ -1,9 +1,12 @@
 import importlib.util
 import unittest
 import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
 module_name = 'emojis_mobydick'
-file_path = os.path.join(os.path.dirname(__file__), 'emojis-mobydick.py')
+file_path = os.path.join(os.path.dirname(__file__), '..', 'src', 'emojis-mobydick.py')
 spec = importlib.util.spec_from_file_location(module_name, file_path)
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)

@@ -1,5 +1,9 @@
 import unittest
 import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+
 from moby_dick_parser import MobyDickParser  # Assuming moby_dick_parser.py is in the same directory
 
 class TestMobyDickParser(unittest.TestCase):
