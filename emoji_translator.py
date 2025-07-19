@@ -42,11 +42,11 @@ class EmojiTranslator:
         '''Return the last n words from a toot/string, removing the period at the end if present.'''
         words = s.split()
         if len(words) <= n:
-            return s
+            result = s
         else:
-            s = ' '.join(words[-n:])
-            s = s.replace('.', '')
-            return s
+            result = ' '.join(words[-n:])
+        result = result.rstrip('.')
+        return result
 
     def load_toot_storage(self, file_path):
         """Load toot storage from a JSON file."""
