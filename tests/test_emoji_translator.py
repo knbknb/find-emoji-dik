@@ -1,6 +1,9 @@
 import unittest
 import sys
 import types
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
 # Provide a minimal mock for the mastodon module used by emoji_translator
 mock_mastodon = types.ModuleType("mastodon")
