@@ -1,13 +1,23 @@
 <!-- markdownlint-disable MD046 -->
 # find-emoji-dik
 
+### Repository Overview
+
+_find-emoji-dik_ is a Python project that fetches short text fragments from literature-themed Mastodon accounts, converts those fragments into emojis using an LLM API, and posts the emoji responses back to Mastodon.
+
+_Why? This funny little Python project served to refresh my Python skills. I'm learning  AI-supported coding and  interacting with LLM APIs. Learning by doing._
+
+This README explains the purpose and provides examples of expected output, requirements, and instructions for using a `.env` file for API credentials.
+
+### Technical Overview
+
 Simple Command-Line Script for Bash/Linux/Python.
 
-The Python script `emojis-mobydick.py` will fetch the most recent toot from bot-account [@mobydick@mastodon.art](https://social.vivaldi.net/@mobydick@botsin.space) and from other literature accounts.
+The main script is `emojis-mobydick.py`. The script will fetch the most recent toot from bot-account [@mobydick@mastodon.art](https://social.vivaldi.net/@mobydick@botsin.space) and from other literature accounts.
 
-Then the script uses a Large Language Model (LLM) to translate sentence fragments from the novel "Moby Dick" (posted by above-mentioned bot) into Emojis, and postthat string of emojis as a new toot to the Mastodon Social Network via its REST API.
+Then the script uses a Large Language Model (LLM) to translate sentence fragments from the novel "Moby Dick" (posted by above-mentioned bot) into Emojis, and post that string of emojis as a new toot to the Mastodon Social Network via its REST API.
 
-_Why? This funny little Python project served to refresh my Python skills. I'm learning  AI-supported coding and  interacting with LLM APIs. Learning by doing._  
+
 
 ## Call and Expected Output
 
@@ -88,7 +98,7 @@ Take a look at the files in the `static/` directory of this repo, e.g., to see h
 - Translate the whole book into emojis, and post it to all social networks.
 - Rewrite this such that it uses an agentic architecture, e.g. with a central agent that distributes tasks to worker agents.
 
-## Tests 
+## Tests
 
 Test with pytest, e.g. `pytest-3 unittest_mobydick_strings.py` (under construction).
 
