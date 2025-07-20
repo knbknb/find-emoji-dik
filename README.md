@@ -24,11 +24,15 @@ Then the script uses a Large Language Model (LLM) to translate sentence fragment
     workon mastodon  # my virtualenv, created with virtualenvwrapper
     ./src/emojis-mobydick.py
 
+(Read toots from Mastodon, parse most recent toot; post fragment to LLM API, let LLM translate to Emojis, process LLM response, post fragment+Emojis to own account)
+
 You can fetch a random snippet from a static text file with:
 
-    ./src/emojis-mobydick.py --static-file path/to/file.txt --signature "Mark Twain"
+    ./src/emojis-mobydick.py --static-file path/to/mark-twain-from-gutenberg.txt --signature "Mark Twain"
 
-(Read toots from Mastodon, parse most recent toot; post fragment to LLM API, let LLM translate to Emojis, process LLM response, post fragment+Emojis to own account)
+(Read random snippet from text file, let LLM translate to Emojis, process LLM response, post fragment+Emojis to own account)
+
+In order to avoid duplicate posts, the script will check if the text fragment is already present in the local cache file `data/toot-storage.json`. If it is, the script will skip posting that fragment.
 
 ### Expected Output (Example)
 
