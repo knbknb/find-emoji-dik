@@ -3,7 +3,7 @@
 
 ### Repository Overview
 
-_find-emoji-dik_ is a Python project that fetches short text fragments from literature-themed Mastodon accounts or from static text files, converts those fragments into emojis using an LLM API, and posts the emoji responses back to Mastodon.
+_find-emoji-dik_ is a Python project that fetches short text fragments from literature-themed Mastodon accounts or from text files in the `data/` directory, converts those fragments into emojis using an LLM API, and posts the emoji responses back to Mastodon.
 
 _Why? This funny little Python project served to refresh my Python skills. I'm learning  AI-supported coding and  interacting with LLM APIs. Learning by doing._
 
@@ -26,9 +26,9 @@ Then the script uses a Large Language Model (LLM) to translate sentence fragment
 
 (Read toots from Mastodon, parse most recent toot; post fragment to LLM API, let LLM translate to Emojis, process LLM response, post fragment+Emojis to own account)
 
-You can fetch a random snippet from a static text file with:
+You can fetch a random snippet from a text file stored in `data/` with:
 
-    ./src/emojis-mobydick.py --static-file path/to/mark-twain-from-gutenberg.txt --signature "Mark Twain"
+    ./src/emojis-mobydick.py --data-file path/to/mark-twain-from-gutenberg.txt --signature "Mark Twain"
 
 (Read random snippet from text file, let LLM translate to Emojis, process LLM response, post fragment+Emojis to own account)
 

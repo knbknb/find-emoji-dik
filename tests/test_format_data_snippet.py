@@ -11,13 +11,13 @@ spec = importlib.util.spec_from_file_location(module_name, file_path)
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
-class TestFormatStaticSnippet(unittest.TestCase):
+class TestFormatDataSnippet(unittest.TestCase):
     def test_with_signature(self):
-        result = module.format_static_snippet('hello', '🙂', 'Author')
+        result = module.format_data_snippet('hello', '🙂', 'Author')
         self.assertEqual(result, 'hello:\n🙂\n        -- Author')
 
     def test_without_signature(self):
-        result = module.format_static_snippet('hello', '🙂')
+        result = module.format_data_snippet('hello', '🙂')
         self.assertEqual(result, 'hello:\n🙂')
 
 if __name__ == '__main__':

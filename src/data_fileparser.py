@@ -1,7 +1,7 @@
 import random
 
-class StaticFileParser:
-    """Parse a static text file and return random snippets."""
+class DataFileParser:
+    """Parse a text file in the data directory and return random snippets."""
     def __init__(self, file_path):
         self.file_path = file_path
         with open(file_path, 'r', encoding='utf-8') as f:
