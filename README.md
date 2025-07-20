@@ -3,11 +3,11 @@
 
 ### Repository Overview
 
-_find-emoji-dik_ is a Python project that fetches short text fragments from literature-themed Mastodon accounts, converts those fragments into emojis using an LLM API, and posts the emoji responses back to Mastodon.
+_find-emoji-dik_ is a Python project that fetches short text fragments from literature-themed Mastodon accounts or from static text files, converts those fragments into emojis using an LLM API, and posts the emoji responses back to Mastodon.
 
 _Why? This funny little Python project served to refresh my Python skills. I'm learning  AI-supported coding and  interacting with LLM APIs. Learning by doing._
 
-This README explains the purpose and provides examples of expected output, requirements, and instructions for using a `.env` file for API credentials.
+This README explains the purpose and provides examples of expected output, requirements, and shell commands for invocation.
 
 ### Technical Overview
 
@@ -15,9 +15,7 @@ Simple Command-Line Script for Bash/Linux/Python.
 
 The main script is `emojis-mobydick.py`. The script will fetch the most recent toot from bot-account [@mobydick@mastodon.art](https://social.vivaldi.net/@mobydick@botsin.space) and from other literature accounts.
 
-Then the script uses a Large Language Model (LLM) to translate sentence fragments from the novel "Moby Dick" (posted by above-mentioned bot) into Emojis, and post that string of emojis as a new toot to the Mastodon Social Network via its REST API.
-
-
+Then the script uses a Large Language Model (LLM) to translate sentence fragments from the novel "Moby Dick" (posted by above-mentioned bot) into Emojis, and post that string of emojis as a new toot to the Mastodon Social Network via its REST API, using a `.env` file for API credentials.
 
 ## Call and Expected Output
 
