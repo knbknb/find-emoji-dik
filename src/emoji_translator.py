@@ -2,10 +2,12 @@ from mastodon import Mastodon
 from bs4 import BeautifulSoup
 from moby_dick_parser import MobyDickParser
 
+# from dotenv
 from dotenv import load_dotenv, find_dotenv
 import os
 import requests
 import json
+from datetime import datetime, timedelta
 # import logging
 
 class EmojiTranslator:
@@ -58,14 +60,33 @@ class EmojiTranslator:
         """Load toot storage from a JSON file."""
         try:
             with open(file_path, 'r') as f:
-                return json.load(f)
+                data = json.load(f)
+                # convert from old format if necessary
+                for k, v in list(data.items()):
+                    if isinstance(v, str):
+                        data[k] = {
+                            "emoji": v,
+                            "date": "1970-01-01T00:00:00"
+                        }
+                return data
         except FileNotFoundError:
             return {}
 
     def save_toot_storage(self, file_path, storage):
         """Save toot storage to a JSON file."""
         with open(file_path, 'w') as f:
-            json.dump(storage, f)
+            json.dump(storage, f, indent=2)
+
+    def should_post(self, storage, toot, interval_days=120):
+        """Return True if toot should be posted based on interval."""
+        entry = storage.get(toot)
+        if not entry:
+            return True
+        try:
+            last = datetime.fromisoformat(entry.get("date", "1970-01-01T00:00:00"))
+        except ValueError:
+            return True
+        return datetime.now() - last > timedelta(days=interval_days)
 
     def call_api_for_emoji_translation(self, url, openai_access_token, text):
         """Make an API call to translate text to emojis."""
@@ -119,13 +140,13 @@ class EmojiTranslator:
         if config.dry_run:
             print(api.retrieve_mastodon_version())
 
-        # if the command-line has a "toot" argument with any string, use that, 
+        # if the command-line has a "toot" argument with any string, use that,
         # otherwise fetch the most recent toot
         toot_storage = self.load_toot_storage(config.toot_storage_file)
         if config.toot:
             toots = [config.toot]
             fragment = config.toot
-            
+
         else:
             for account in self.literature_accounts:
                 user = account['user']
@@ -148,10 +169,9 @@ class EmojiTranslator:
                 fragment = soup.get_text()
 
                 toot = fragment
-                if toot in toot_storage and config.dry_run:
-                    print(f"########## Toot from {user} already in storage. Skipping. #########")
-                    continue
-                elif toot in toot_storage:
+                if not self.should_post(toot_storage, toot, interval_days=120):
+                    if config.dry_run:
+                        print(f"########## Skipping toot from {user}; posted recently #########")
                     continue
                     
                 # Citation based on account
@@ -169,10 +189,20 @@ class EmojiTranslator:
                         chapter_info = f"\n({work} - Chapter {chapter_num}: \"{chapter_title}\", Paragraph {paragraph_num}, Sentence {sentence_num})"
 
                 # Translate and post
-                emoji_toot = self.translate_to_emoji(self.translate_service_url, config.openai_access_token, toot)
-                
+                if toot in toot_storage:
+                    emoji_toot = toot_storage[toot]['emoji']
+                else:
+                    emoji_toot = self.translate_to_emoji(
+                        self.translate_service_url,
+                        config.openai_access_token,
+                        toot
+                    )
+
                 if not config.dry_run:
-                    toot_storage[toot] = emoji_toot
+                    toot_storage[toot] = {
+                        'emoji': emoji_toot,
+                        'date': datetime.now().isoformat()
+                    }
                     self.save_toot_storage(config.toot_storage_file, toot_storage)
                 
                 # Format the final toot

@@ -54,5 +54,22 @@ class TestEmojiTranslator(unittest.TestCase):
         result = self.translator.last_n_words("Call me Ishmael said he.", n=4)
         self.assertEqual(result, "me Ishmael said he")
 
+    def test_should_post_new_toot(self):
+        result = self.translator.should_post({}, "hello", interval_days=120)
+        self.assertTrue(result)
+
+    def test_should_post_skip_recent(self):
+        from datetime import datetime
+        storage = {"hello": {"emoji": "🙂", "date": datetime.now().isoformat()}}
+        result = self.translator.should_post(storage, "hello", interval_days=120)
+        self.assertFalse(result)
+
+    def test_should_post_after_interval(self):
+        from datetime import datetime, timedelta
+        old_date = (datetime.now() - timedelta(days=121)).isoformat()
+        storage = {"hello": {"emoji": "🙂", "date": old_date}}
+        result = self.translator.should_post(storage, "hello", interval_days=120)
+        self.assertTrue(result)
+
 if __name__ == "__main__":
     unittest.main()
