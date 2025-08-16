@@ -146,7 +146,7 @@ class EmojiTranslator:
         # call API with cleaned main text
         response = self.call_api_for_emoji_translation(url, openai_access_token, main_text)
         emoji_text = response.json()['choices'][0]['message']['content']
-        return emoji_text
+        return emoji_text, extratext
 
     def run(self, config):
         # Create a dictionary to serve as the persistent storage for the toots:
@@ -213,12 +213,16 @@ class EmojiTranslator:
                 # Translate and post
                 if toot in toot_storage:
                     emoji_toot = toot_storage[toot]['emoji']
+                    extratext = ""
                 else:
-                    (emoji_toot, extratext) = self.translate_to_emoji(
+                    emoji_toot, extratext = self.translate_to_emoji(
                         self.translate_service_url,
                         config.openai_access_token,
-                        toot + self.attribution if self.attribution else ""
+                        toot,
                     )
+                if extratext:
+                    toot, _ = self.split_attribution(toot)
+                    emoji_toot = f"{emoji_toot}\n{extratext}"
 
                 if not config.dry_run:
                     toot_storage[toot] = {
@@ -226,7 +230,7 @@ class EmojiTranslator:
                         'date': datetime.now().isoformat()
                     }
                     self.save_toot_storage(config.toot_storage_file, toot_storage)
-                
+
                 # Format the final toot
                 emoji_toot = f"{toot}:\n{emoji_toot}\n{citation}{chapter_info}"
                     
