@@ -8,7 +8,7 @@ import os
 import requests
 import json
 from datetime import datetime, timedelta
-# import logging
+import re  # added for attribution splitting
 
 class EmojiTranslator:
     def __init__(self):
@@ -17,7 +17,8 @@ class EmojiTranslator:
                 "user": "@mobydick@mastodon.art",
                 "author": "Herman Melville",
                 "work": "Moby Dick",
-                "source_file": "./data/moby-dick-lowercase.txt"
+                "source_file": "./data/moby-dick-lowercase.txt",
+                "attribution": None
             },
             # {
             #     "user": "@SamuelPepys@mastodon.social",
@@ -26,10 +27,18 @@ class EmojiTranslator:
             #     "source_file": None
             # },
             {
+                "user": "@anarchistquotes@todon.eu",
+                "author": "Anarchist Quotes",
+                "work": "Various",
+                "source_file": None,
+                "attribution": None
+            },
+            {
                 "user": "@ShakespeareQuotes@botsin.space",
                 "author": "William Shakespeare",
                 "work": "Collected Works",
-                "source_file": None
+                "source_file": None,
+                "attribution": None
             }
         ]
         load_dotenv(find_dotenv())
@@ -44,7 +53,7 @@ class EmojiTranslator:
         self.n_words = 4  # trying to match this many words of a @mobydick toot in book
                 
         self.translate_service_url = "https://api.openai.com/v1/chat/completions"
-        
+        self.attribution = None
 
     def last_n_words(self, s, n=5) :
         '''Return the last n words from a toot/string, removing the period at the end if present.'''
@@ -55,6 +64,15 @@ class EmojiTranslator:
             result = ' '.join(words[-n:])
         result = result.rstrip('.')
         return result
+
+    def split_attribution(self, text):
+        """Split trailing attribution line starting with '--' from the text."""
+        lines = text.splitlines()
+        if len(lines) > 1:
+            last = lines[-1].strip()
+            if re.match(r"^--\s*", last):
+                return "\n".join(lines[:-1]), last
+        return text, ""
 
     def load_toot_storage(self, file_path):
         """Load toot storage from a JSON file."""
@@ -90,6 +108,7 @@ class EmojiTranslator:
 
     def call_api_for_emoji_translation(self, url, openai_access_token, text):
         """Make an API call to translate text to emojis."""
+
         payload = {
             "model": "gpt-4o",
             "messages": [
@@ -98,7 +117,7 @@ class EmojiTranslator:
                     "content": "translate the following text into emojis: '%s'. I need only the emojis, on a single line. Do not respond with text."
                 }
             ],
-            "temperature": 1,
+            "temperature": 1, # 1-maximum creativity
             "top_p": 1,
             "n": 1,
             "stream": False,
@@ -116,14 +135,17 @@ class EmojiTranslator:
         }
         headers['Authorization'] = headers['Authorization'] % openai_access_token
         response = requests.request("POST", url, headers=headers, data=payload_json)
-        
+
         return response
 
     def translate_to_emoji(self, url, openai_access_token="openai_access_token", text="🐳"):
         """Translate text to emojis and store the result in toot_storage."""
-        response = self.call_api_for_emoji_translation(url, openai_access_token, text)
+        # extract and store any trailing attribution before calling API
+        main_text, extratext = self.split_attribution(text)
+        self.attribution = extratext
+        # call API with cleaned main text
+        response = self.call_api_for_emoji_translation(url, openai_access_token, main_text)
         emoji_text = response.json()['choices'][0]['message']['content']
-        
         return emoji_text
 
     def run(self, config):
@@ -192,10 +214,10 @@ class EmojiTranslator:
                 if toot in toot_storage:
                     emoji_toot = toot_storage[toot]['emoji']
                 else:
-                    emoji_toot = self.translate_to_emoji(
+                    (emoji_toot, extratext) = self.translate_to_emoji(
                         self.translate_service_url,
                         config.openai_access_token,
-                        toot
+                        toot + self.attribution if self.attribution else ""
                     )
 
                 if not config.dry_run:
@@ -219,6 +241,3 @@ class EmojiTranslator:
         # Wait for a while before polling again
         #time.sleep(60)        
 
-if __name__ == '__main__':
-    translator = EmojiTranslator()
-    translator.run()

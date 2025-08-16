@@ -71,5 +71,28 @@ class TestEmojiTranslator(unittest.TestCase):
         result = self.translator.should_post(storage, "hello", interval_days=120)
         self.assertTrue(result)
 
+    def test_split_attribution_no_attribution(self):
+        translator = EmojiTranslator()
+        text = "Hello world!\nThis is a test."
+        main, attrib = translator.split_attribution(text)
+        self.assertEqual(main, text)
+        self.assertEqual(attrib, "")
+
+    def test_split_attribution_with_attribution(self):
+        translator = EmojiTranslator()
+        text = "Line one.\nLine two.\n-- Author Name"
+        expected_main = "Line one.\nLine two."
+        expected_attrib = "-- Author Name"
+        main, attrib = translator.split_attribution(text)
+        self.assertEqual(main, expected_main)
+        self.assertEqual(attrib, expected_attrib)
+
+    def test_translate_to_emoji_sets_attribution(self):
+        translator = EmojiTranslator()
+        dummy_text = "Sample content.\n-- Test Author"
+        # Call translate_to_emoji, which should set attribution
+        translator.translate_to_emoji("http://example.com", "token123", dummy_text)
+        self.assertEqual(translator.attribution, "-- Test Author")
+
 if __name__ == "__main__":
     unittest.main()
