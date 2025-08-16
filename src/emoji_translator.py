@@ -34,7 +34,7 @@ class EmojiTranslator:
                 "attribution": None
             },
             {
-                "user": "@ShakespeareQuotes@botsin.space",
+                "user": "@ShakespeareQuotes@universeodon.com",
                 "author": "William Shakespeare",
                 "work": "Collected Works",
                 "source_file": None,
