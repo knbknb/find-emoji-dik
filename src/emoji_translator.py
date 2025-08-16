@@ -66,12 +66,16 @@ class EmojiTranslator:
         return result
 
     def split_attribution(self, text):
-        """Split trailing attribution line starting with '--' from the text."""
+        """Split trailing attribution line starting with '--' from the text.
+
+        Hashtags within the attribution line are removed before returning.
+        """
         lines = text.splitlines()
         if len(lines) > 1:
             last = lines[-1].strip()
             if re.match(r"^--\s*", last):
-                return "\n".join(lines[:-1]), last
+                cleaned = re.sub(r"\s*#[^\s]+", "", last).rstrip()
+                return "\n".join(lines[:-1]), cleaned
         return text, ""
 
     def load_toot_storage(self, file_path):

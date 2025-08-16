@@ -59,8 +59,21 @@ class TestEmojiTranslatorAttribution(unittest.TestCase):
         self.assertEqual(main, "Meaningful sentence")
         self.assertEqual(attrib, "-- John Doe")
 
+    def test_split_attribution_strips_hashtags(self):
+        text = "Meaningful sentence\n-- John Doe #quote #test"
+        main, attrib = self.translator.split_attribution(text)
+        self.assertEqual(main, "Meaningful sentence")
+        self.assertEqual(attrib, "-- John Doe")
+
     def test_translate_to_emoji_sets_attribution_with_author(self):
         text = "Hello world\n-- Jane"
+        emoji, attrib = self.translator.translate_to_emoji("http://fake", "token123", text)
+        self.assertEqual(emoji, "😊")
+        self.assertEqual(attrib, "-- Jane")
+        self.assertEqual(self.translator.attribution, "-- Jane")
+
+    def test_translate_to_emoji_cleans_hashtagged_attribution(self):
+        text = "Hello world\n-- Jane #tag1 #tag2"
         emoji, attrib = self.translator.translate_to_emoji("http://fake", "token123", text)
         self.assertEqual(emoji, "😊")
         self.assertEqual(attrib, "-- Jane")
