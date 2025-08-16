@@ -30,15 +30,6 @@ mock_dotenv.load_dotenv = fake_load_dotenv
 mock_dotenv.find_dotenv = fake_find_dotenv
 sys.modules.setdefault("dotenv", mock_dotenv)
 
-# Provide a minimal mock for moby_dick_parser
-mock_parser = types.ModuleType("moby_dick_parser")
-class DummyMobyDickParser:
-    def __init__(self, file_path):
-        pass
-    def find_fragment(self, fragment):
-        return (None, None, None, None)
-mock_parser.MobyDickParser = DummyMobyDickParser
-sys.modules.setdefault("moby_dick_parser", mock_parser)
 
 # Provide a minimal mock for requests module used by emoji_translator
 mock_requests = types.ModuleType("requests")
@@ -68,16 +59,31 @@ class TestEmojiTranslatorAttribution(unittest.TestCase):
         self.assertEqual(main, "Meaningful sentence")
         self.assertEqual(attrib, "-- John Doe")
 
+    def test_split_attribution_strips_hashtags(self):
+        text = "Meaningful sentence\n-- John Doe #quote #test"
+        main, attrib = self.translator.split_attribution(text)
+        self.assertEqual(main, "Meaningful sentence")
+        self.assertEqual(attrib, "-- John Doe")
+
     def test_translate_to_emoji_sets_attribution_with_author(self):
         text = "Hello world\n-- Jane"
-        emoji = self.translator.translate_to_emoji("http://fake", "token123", text)
+        emoji, attrib = self.translator.translate_to_emoji("http://fake", "token123", text)
         self.assertEqual(emoji, "😊")
+        self.assertEqual(attrib, "-- Jane")
+        self.assertEqual(self.translator.attribution, "-- Jane")
+
+    def test_translate_to_emoji_cleans_hashtagged_attribution(self):
+        text = "Hello world\n-- Jane #tag1 #tag2"
+        emoji, attrib = self.translator.translate_to_emoji("http://fake", "token123", text)
+        self.assertEqual(emoji, "😊")
+        self.assertEqual(attrib, "-- Jane")
         self.assertEqual(self.translator.attribution, "-- Jane")
 
     def test_translate_to_emoji_sets_attribution_without_author(self):
         text = "Hello world"
-        emoji = self.translator.translate_to_emoji("http://fake", "token123", text)
+        emoji, attrib = self.translator.translate_to_emoji("http://fake", "token123", text)
         self.assertEqual(emoji, "😊")
+        self.assertEqual(attrib, "")
         self.assertEqual(self.translator.attribution, "")
 
 if __name__ == "__main__":
