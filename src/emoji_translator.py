@@ -77,7 +77,7 @@ class EmojiTranslator:
             lines.pop()
         if lines:
             last = lines[-1].strip()
-            if re.match(r"^--\s*", last):
+            if re.match(r"(^--\s*|\s\s+)--\s*|", last):
                 cleaned = re.sub(r"\s*#[^\s]+", "", last).rstrip()
                 return "\n".join(lines[:-1]), cleaned
         return "\n".join(lines), ""
@@ -118,7 +118,7 @@ class EmojiTranslator:
         """Make an API call to translate text to emojis."""
 
         payload = {
-            "model": "gpt-4o",
+            "model": "gpt-5-nano", # "gpt-4o",
             "messages": [
                 {
                     "role": "user",
