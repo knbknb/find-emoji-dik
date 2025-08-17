@@ -69,14 +69,18 @@ class EmojiTranslator:
         """Split trailing attribution line starting with '--' from the text.
 
         Hashtags within the attribution line are removed before returning.
+        Trailing lines that consist solely of hashtags are stripped prior to
+        processing so they don't interfere with attribution detection.
         """
         lines = text.splitlines()
-        if len(lines) > 1:
+        while lines and re.match(r"^\s*(#[^\s]+\s*)+$", lines[-1]):
+            lines.pop()
+        if lines:
             last = lines[-1].strip()
             if re.match(r"^--\s*", last):
                 cleaned = re.sub(r"\s*#[^\s]+", "", last).rstrip()
                 return "\n".join(lines[:-1]), cleaned
-        return text, ""
+        return "\n".join(lines), ""
 
     def load_toot_storage(self, file_path):
         """Load toot storage from a JSON file."""
@@ -195,13 +199,11 @@ class EmojiTranslator:
                 fragment = soup.get_text()
 
                 toot = fragment
-                if not self.should_post(toot_storage, toot, interval_days=120):
+                clean_toot, _ = self.split_attribution(toot)
+                if not self.should_post(toot_storage, clean_toot, interval_days=120):
                     if config.dry_run:
                         print(f"########## Skipping toot from {user}; posted recently #########")
                     continue
-                    
-                # Citation based on account
-                citation = f"        -- {author} (h/t {user})"
                 
                 # If source file exists, try to find the fragment in it
                 chapter_info = ""
@@ -215,8 +217,8 @@ class EmojiTranslator:
                         chapter_info = f"\n({work} - Chapter {chapter_num}: \"{chapter_title}\", Paragraph {paragraph_num}, Sentence {sentence_num})"
 
                 # Translate and post
-                if toot in toot_storage:
-                    emoji_toot = toot_storage[toot]['emoji']
+                if clean_toot in toot_storage:
+                    emoji_toot = toot_storage[clean_toot]['emoji']
                     extratext = ""
                 else:
                     emoji_toot, extratext = self.translate_to_emoji(
@@ -224,19 +226,21 @@ class EmojiTranslator:
                         config.openai_access_token,
                         toot,
                     )
+
                 if extratext:
-                    toot, _ = self.split_attribution(toot)
-                    emoji_toot = f"{emoji_toot}\n{extratext}"
+                    attribution_line = f"{extratext} (h/t {user})"
+                else:
+                    attribution_line = f"-- {author} (h/t {user})"
 
                 if not config.dry_run:
-                    toot_storage[toot] = {
+                    toot_storage[clean_toot] = {
                         'emoji': emoji_toot,
                         'date': datetime.now().isoformat()
                     }
                     self.save_toot_storage(config.toot_storage_file, toot_storage)
 
                 # Format the final toot
-                emoji_toot = f"{toot}:\n{emoji_toot}\n{citation}{chapter_info}"
+                emoji_toot = f"{clean_toot}\n{attribution_line}\n{emoji_toot}{chapter_info}"
                     
                 if emoji_toot and not config.dry_run:
                     print(emoji_toot)
