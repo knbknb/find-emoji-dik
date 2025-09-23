@@ -50,6 +50,8 @@ class EmojiTranslator:
         self.mastodon_client_secret = os.getenv('MASTODON_CLIENT_SECRET')
         self.mastodon_access_token = os.getenv('MASTODON_ACCESS_TOKEN')
         self.openai_access_token = os.getenv('OPENAI_ACCESS_TOKEN')
+        #self.openai_model = os.getenv('OPENAI_MODEL', 'gpt-5-nano')  # default model
+        self.openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o')  # default model
         self.n_words = 4  # trying to match this many words of a @mobydick toot in book
                 
         self.translate_service_url = "https://api.openai.com/v1/chat/completions"
@@ -77,7 +79,7 @@ class EmojiTranslator:
             lines.pop()
         if lines:
             last = lines[-1].strip()
-            if re.match(r"(^--\s*|\s\s+)--\s*|", last):
+            if re.match(r"^--\s*", last):
                 cleaned = re.sub(r"\s*#[^\s]+", "", last).rstrip()
                 return "\n".join(lines[:-1]), cleaned
         return "\n".join(lines), ""
@@ -114,26 +116,43 @@ class EmojiTranslator:
             return True
         return datetime.now() - last > timedelta(days=interval_days)
 
-    def call_api_for_emoji_translation(self, url, openai_access_token, text):
-        """Make an API call to translate text to emojis."""
+    def call_api_for_emoji_translation(self, url, openai_access_token, text, model=None):
+        """Make an API call to translate text to emojis. Automatically omits
+        temperature when using gpt-5 models (gpt-5-nano) which don't accept it.
+        """
+        model = model or self.openai_model
+
+        # message template for chat completion
+        message_template = """<task>
+                        translate the following text into emojis:
+                        I need only the emojis, on a single line.
+                        Do not respond with text.
+                        Still keep original punctuation in the emoji output.
+                        Do not include any zero-width joiner characters in the output.
+                    </task>
+                    <text>%s</text>
+                    """
 
         payload = {
-            "model": "gpt-5-nano", # "gpt-4o",
+            "model": model,
             "messages": [
                 {
                     "role": "user",
-                    "content": "translate the following text into emojis: '%s'. I need only the emojis, on a single line. Do not respond with text."
+                    "content": message_template % text
                 }
             ],
-            "temperature": 1, # 1-maximum creativity
             "top_p": 1,
             "n": 1,
             "stream": False,
-            "max_tokens": 450,
-            "presence_penalty": 0,
-            "frequency_penalty": 0
+            "max_tokens": 1000
         }
-        payload['messages'][0]['content'] = payload['messages'][0]['content'] % text
+
+        # gpt-5 family (e.g. gpt-5-nano) does not accept temperature; only add temperature
+        # and penalties for models that support them.
+        if not model.startswith("gpt-5"):
+            payload["temperature"] = 0.95
+            payload["presence_penalty"] = 0
+            payload["frequency_penalty"] = 0
 
         payload_json = json.dumps(payload)
         headers = {
@@ -151,9 +170,33 @@ class EmojiTranslator:
         # extract and store any trailing attribution before calling API
         main_text, extratext = self.split_attribution(text)
         self.attribution = extratext
-        # call API with cleaned main text
-        response = self.call_api_for_emoji_translation(url, openai_access_token, main_text)
-        emoji_text = response.json()['choices'][0]['message']['content']
+        # call API with cleaned main text and configured model
+        response = self.call_api_for_emoji_translation(url, openai_access_token, main_text, model=self.openai_model)
+
+        # robust parsing of various response shapes to avoid KeyErrors
+        emoji_text = ""
+        try:
+            resp_json = response.json()
+        except Exception:
+            resp_json = {}
+
+        if isinstance(resp_json, dict):
+            choices = resp_json.get('choices')
+            if choices and isinstance(choices, list) and len(choices) > 0:
+                first = choices[0]
+                # typical chat completion shape
+                if isinstance(first.get('message'), dict):
+                    emoji_text = first['message'].get('content', '') or ''
+                else:
+                    # fallback to text field
+                    emoji_text = first.get('text', '') or ''
+            else:
+                # other possible shapes
+                emoji_text = resp_json.get('text', '') or resp_json.get('content', '') or ''
+        elif isinstance(resp_json, str):
+            emoji_text = resp_json
+
+        emoji_text = (emoji_text or "").strip()
         return emoji_text, extratext
 
     def run(self, config):
@@ -200,6 +243,7 @@ class EmojiTranslator:
 
                 toot = fragment
                 clean_toot, _ = self.split_attribution(toot)
+                clean_toot = re.sub(r"\s*#[^\s]+", "", clean_toot).rstrip()
                 if not self.should_post(toot_storage, clean_toot, interval_days=120):
                     if config.dry_run:
                         print(f"########## Skipping toot from {user}; posted recently #########")
@@ -224,10 +268,14 @@ class EmojiTranslator:
                     emoji_toot, extratext = self.translate_to_emoji(
                         self.translate_service_url,
                         config.openai_access_token,
-                        toot,
+                        clean_toot,
                     )
-
-                if extratext:
+                # replace ALL unicode char \u200d (zero-width-joiner) with empty string
+                emoji_toot = re.sub(r'\u200d', '', emoji_toot).strip()
+                
+                if extratext and user == "@mobydick@mastodon.art":
+                    attribution_line = f"\n-- {author} (h/t {user})"
+                elif extratext:
                     attribution_line = f"{extratext} (h/t {user})"
                 else:
                     attribution_line = f"-- {author} (h/t {user})"
@@ -251,5 +299,5 @@ class EmojiTranslator:
                 else:
                     print("No emoji toot found. OpenAI API call failed?")
         # Wait for a while before polling again
-        #time.sleep(60)        
+        #time.sleep(60)
 
