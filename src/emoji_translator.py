@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 import re  # added for attribution splitting
 from typing import Optional, List
 from pydantic import BaseModel, field_validator
+from app_config import AppConfig
 
 class LiteratureAccount(BaseModel):
     user: str
@@ -29,7 +30,8 @@ class LiteratureAccount(BaseModel):
         return v
 
 class EmojiTranslator:
-    def __init__(self):
+    def __init__(self, config: AppConfig):
+        self.config = config
         self.literature_accounts: List[LiteratureAccount] = [
             LiteratureAccount(
                 user="@mobydick@mastodon.art",
@@ -59,20 +61,6 @@ class EmojiTranslator:
                 attribution=None,
             ),
         ]
-        load_dotenv(find_dotenv())
-        self.file_path = './data/moby-dick-lowercase.txt'
-        self.toot_storage_file = 'data/toot_storage.json'
-        self.user = "@mobydick@mastodon.art" # will be overwritten
-        self.mastodon_instance_url = 'https://social.vivaldi.net'
-        self.mastodon_client_id = os.getenv('MASTODON_CLIENT_ID')
-        self.mastodon_client_secret = os.getenv('MASTODON_CLIENT_SECRET')
-        self.mastodon_access_token = os.getenv('MASTODON_ACCESS_TOKEN')
-        self.openai_access_token = os.getenv('OPENAI_ACCESS_TOKEN')
-        #self.openai_model = os.getenv('OPENAI_MODEL', 'gpt-5-nano')  # default model
-        self.openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o')  # default model
-        self.n_words = 4  # trying to match this many words of a @mobydick toot in book
-                
-        self.translate_service_url = "https://api.openai.com/v1/chat/completions"
         self.attribution = None
 
     def last_n_words(self, s, n=5) :
@@ -138,7 +126,7 @@ class EmojiTranslator:
         """Make an API call to translate text to emojis. Automatically omits
         temperature when using gpt-5 models (gpt-5-nano) which don't accept it.
         """
-        model = model or self.openai_model
+        model = model or self.config.openai_model
 
         # message template for chat completion
         message_template = """<task>
@@ -189,7 +177,7 @@ class EmojiTranslator:
         main_text, extratext = self.split_attribution(text)
         self.attribution = extratext
         # call API with cleaned main text and configured model
-        response = self.call_api_for_emoji_translation(url, openai_access_token, main_text, model=self.openai_model)
+        response = self.call_api_for_emoji_translation(url, openai_access_token, main_text, model=self.config.openai_model)
 
         # robust parsing of various response shapes to avoid KeyErrors
         emoji_text = ""
@@ -217,7 +205,7 @@ class EmojiTranslator:
         emoji_text = (emoji_text or "").strip()
         return emoji_text, extratext
 
-    def run(self, config):
+    def run(self, config: AppConfig):
         # Create a dictionary to serve as the persistent storage for the toots:
         toot_storage = {}
         
@@ -226,7 +214,7 @@ class EmojiTranslator:
             client_id=config.mastodon_client_id,
             client_secret=config.mastodon_client_secret,
             access_token=config.mastodon_access_token,
-            api_base_url=config.mastodon_instance_url
+            api_base_url=str(config.mastodon_instance_url),
         )
         if config.dry_run:
             print(api.retrieve_mastodon_version())
@@ -270,10 +258,10 @@ class EmojiTranslator:
                 # If source file exists, try to find the fragment in it
                 chapter_info = ""
                 if source_file:
-                    fragment = self.last_n_words(fragment.lower(), self.n_words)
+                    fragment = self.last_n_words(fragment.lower(), self.config.n_words)
                     parser = MobyDickParser(source_file)
                     chapter_num, chapter_title, paragraph_num, sentence_num = parser.find_fragment(fragment)
-                    print(f"Last {self.n_words} words: {fragment}")
+                    print(f"Last {self.config.n_words} words: {fragment}")
                     if chapter_num:
                         print(f"Found in {work}!")
                         chapter_info = f"\n({work} - Chapter {chapter_num}: \"{chapter_title}\", Paragraph {paragraph_num}, Sentence {sentence_num})"
@@ -283,8 +271,10 @@ class EmojiTranslator:
                     emoji_toot = toot_storage[clean_toot]['emoji']
                     extratext = ""
                 else:
+                    if not config.openai_access_token:
+                        raise ValueError("OpenAI access token is required; set OPENAI_ACCESS_TOKEN env or pass --openai-token")
                     emoji_toot, extratext = self.translate_to_emoji(
-                        self.translate_service_url,
+                        self.config.translate_service_url,
                         config.openai_access_token,
                         clean_toot,
                     )
