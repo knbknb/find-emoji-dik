@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 
 # Provide a minimal mock for the mastodon module used by emoji_translator
 mock_mastodon = types.ModuleType("mastodon")
-mock_mastodon.Mastodon = object
+mock_mastodon.Mastodon = object  # type: ignore[attr-defined]
 sys.modules.setdefault("mastodon", mock_mastodon)
 
 # Provide a minimal mock for BeautifulSoup to avoid importing bs4
@@ -17,7 +17,7 @@ class DummyBeautifulSoup:
         self._text = text
     def get_text(self):
         return self._text
-mock_bs4.BeautifulSoup = DummyBeautifulSoup
+mock_bs4.BeautifulSoup = DummyBeautifulSoup  # type: ignore[attr-defined]
 sys.modules.setdefault("bs4", mock_bs4)
 
 # Provide a minimal mock for dotenv functions used in emoji_translator
@@ -26,8 +26,8 @@ def fake_load_dotenv(*args, **kwargs):
     return True
 def fake_find_dotenv(*args, **kwargs):
     return ""
-mock_dotenv.load_dotenv = fake_load_dotenv
-mock_dotenv.find_dotenv = fake_find_dotenv
+mock_dotenv.load_dotenv = fake_load_dotenv  # type: ignore[attr-defined]
+mock_dotenv.find_dotenv = fake_find_dotenv  # type: ignore[attr-defined]
 sys.modules.setdefault("dotenv", mock_dotenv)
 
 
@@ -38,14 +38,32 @@ def fake_request(method, url, headers=None, data=None):
         def json(self):
             return {"choices": [{"message": {"content": "😊"}}]}
     return Resp()
-mock_requests.request = fake_request
+mock_requests.request = fake_request  # type: ignore[attr-defined]
 sys.modules.setdefault("requests", mock_requests)
 
+# Minimal shim for pydantic so tests don't require the real package
+import types as _types2
+shim_pydantic = _types2.ModuleType("pydantic")
+class _BaseModel:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+def _model_validator(mode=None):
+    def decorator(fn):
+        return fn
+    return decorator
+shim_pydantic.BaseModel = _BaseModel  # type: ignore[attr-defined]
+shim_pydantic.model_validator = _model_validator  # type: ignore[attr-defined]
+shim_pydantic.field_validator = _model_validator  # type: ignore[attr-defined]
+shim_pydantic.HttpUrl = str  # type: ignore[attr-defined]
+sys.modules.setdefault("pydantic", shim_pydantic)
+
 from emoji_translator import EmojiTranslator
+from app_config import AppConfig
 
 class TestEmojiTranslatorAttribution(unittest.TestCase):
     def setUp(self):
-        self.translator = EmojiTranslator()
+        self.translator = EmojiTranslator(AppConfig(dry_run=True))
 
     def test_split_attribution_no_attribution(self):
         text = "Just some text\nwith multiple lines."

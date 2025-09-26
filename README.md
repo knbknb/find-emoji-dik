@@ -108,8 +108,12 @@ Take a look at the files in the `static/` directory of this repo, e.g., to see h
 
 ## Tests
 
-Test with pytest, e.g. `pytest-3 unittest_mobydick_strings.py` (under construction).
+(under construction).
+Test with pytest, e.g.,  
+`pytest-3 unittest_mobydick_strings.py`  
+or  
+`python -m unittest discover -s tests -p 'test_*.py'`
 
 ## Obsolete
 
-I've looked at the original emojidick community project, but that book is available only as a PDF with emojis  rowwise concatenated into larger images. There is some code left for parsing the PDF, but I'll delete it later.
+I've looked at the original emojidick community project, but that book is available only as a PDF with emojis  concatenated into larger images. There is some code left for parsing the PDF, but I'll delete it later.
