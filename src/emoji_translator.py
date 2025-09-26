@@ -9,37 +9,55 @@ import requests
 import json
 from datetime import datetime, timedelta
 import re  # added for attribution splitting
+from typing import Optional, List
+from pydantic import BaseModel, field_validator
+
+class LiteratureAccount(BaseModel):
+    user: str
+    author: str
+    work: str
+    source_file: Optional[str] = None
+    attribution: Optional[str] = None
+
+    @field_validator('user')
+    @classmethod
+    def validate_user(cls, v: str) -> str:
+        # very light validation: must look like an account reference
+        # e.g. @name@instance.tld
+        if not v.startswith('@') or '@' not in v[1:]:
+            raise ValueError("user must be a Mastodon-style handle like @name@instance")
+        return v
 
 class EmojiTranslator:
     def __init__(self):
-        self.literature_accounts = [
-            {
-                "user": "@mobydick@mastodon.art",
-                "author": "Herman Melville",
-                "work": "Moby Dick",
-                "source_file": "./data/moby-dick-lowercase.txt",
-                "attribution": None
-            },
-            # {
-            #     "user": "@SamuelPepys@mastodon.social",
-            #     "author": "Samuel Pepys",
-            #     "work": "The Diary",
-            #     "source_file": None
-            # },
-            {
-                "user": "@anarchistquotes@todon.eu",
-                "author": "Anarchist Quotes",
-                "work": "Various",
-                "source_file": None,
-                "attribution": None
-            },
-            {
-                "user": "@ShakespeareQuotes@universeodon.com",
-                "author": "William Shakespeare",
-                "work": "Collected Works",
-                "source_file": None,
-                "attribution": None
-            }
+        self.literature_accounts: List[LiteratureAccount] = [
+            LiteratureAccount(
+                user="@mobydick@mastodon.art",
+                author="Herman Melville",
+                work="Moby Dick",
+                source_file="./data/moby-dick-lowercase.txt",
+                attribution=None,
+            ),
+            # LiteratureAccount(
+            #     user="@SamuelPepys@mastodon.social",
+            #     author="Samuel Pepys",
+            #     work="The Diary",
+            #     source_file=None,
+            # ),
+            LiteratureAccount(
+                user="@anarchistquotes@todon.eu",
+                author="Anarchist Quotes",
+                work="Various",
+                source_file=None,
+                attribution=None,
+            ),
+            LiteratureAccount(
+                user="@ShakespeareQuotes@universeodon.com",
+                author="William Shakespeare",
+                work="Collected Works",
+                source_file=None,
+                attribution=None,
+            ),
         ]
         load_dotenv(find_dotenv())
         self.file_path = './data/moby-dick-lowercase.txt'
@@ -222,10 +240,10 @@ class EmojiTranslator:
 
         else:
             for account in self.literature_accounts:
-                user = account['user']
-                author = account['author']
-                work = account['work']
-                source_file = account['source_file']
+                user = account.user
+                author = account.author
+                work = account.work
+                source_file = account.source_file
                 
                 # Fetch account info
                 account_info = api.account_search(user, following=True)[0]
