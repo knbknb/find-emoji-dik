@@ -23,9 +23,45 @@ import argparse
 from emoji_translator import EmojiTranslator  # loads moby_dick_parser
 from data_fileparser import DataFileParser
 from mastodon import Mastodon
+from pydantic import BaseModel, HttpUrl, model_validator
+from typing import Optional, cast
 
 # Load .env file with API keys and credentials
 load_dotenv(find_dotenv())
+
+class AppConfig(BaseModel):
+    """Typed application configuration backed by pydantic.
+
+    This model centralizes defaults and validates required Mastodon credentials
+    when a real post is requested (dry_run == False). Other fields mirror the
+    previous ad-hoc Config object.
+    """
+    file_path: str = "./data/moby-dick-lowercase.txt"
+    toot_storage_file: str = "data/toot_storage.json"
+    user: str = "@mobydick@mastodon.art"
+    mastodon_instance_url: HttpUrl = HttpUrl("https://social.vivaldi.net")
+    mastodon_client_id: Optional[str] = None
+    mastodon_client_secret: Optional[str] = None
+    mastodon_access_token: Optional[str] = None
+    openai_access_token: Optional[str] = None
+    toot: Optional[str] = None
+    data_file: Optional[str] = None
+    signature: Optional[str] = None
+    dry_run: bool = False
+
+    @model_validator(mode='before')
+    @classmethod
+    def require_mastodon_credentials_for_posting(cls, values):
+        dry_run = values.get("dry_run", False)
+        # If the app will actually post, ensure Mastodon credentials are present.
+        if not dry_run:
+            missing = [
+                name for name in ("mastodon_client_id", "mastodon_client_secret", "mastodon_access_token")
+                if not values.get(name)
+            ]
+            if missing:
+                raise ValueError(f"Mastodon credentials missing while dry_run is False: {', '.join(missing)}")
+        return values
 
 def format_data_snippet(snippet, emoji_text, signature=None):
     """Format the final toot text for a snippet from the data directory."""
@@ -77,10 +113,6 @@ def create_config(args):
     dry_run = args.dry_run                      if args.dry_run else False
     toot_storage_file = 'data/toot_storage.json'
     
-    class Config:
-        def __init__(self, **entries):
-            self.__dict__.update(entries)
-    
     config_dict = {
         'file_path': file_path,
         'toot_storage_file': toot_storage_file,
@@ -95,7 +127,8 @@ def create_config(args):
         'signature': signature,
         'dry_run': dry_run
     }
-    config = Config(**config_dict)
+    # Return a validated AppConfig instance
+    config = AppConfig(**config_dict)
     return config
             
 if __name__ == "__main__":
@@ -106,9 +139,11 @@ if __name__ == "__main__":
     if config.data_file:
         parser = DataFileParser(config.data_file)
         snippet = parser.get_random_snippet()
+        if not config.openai_access_token:
+            raise ValueError("OpenAI access token is required to translate snippets; set OPENAI_ACCESS_TOKEN or pass --openai-token")
         emoji_text = translator.translate_to_emoji(
             translator.translate_service_url,
-            config.openai_access_token,
+            cast(str, config.openai_access_token),
             snippet
         )
         toot_text = format_data_snippet(snippet, emoji_text, config.signature)
@@ -118,7 +153,7 @@ if __name__ == "__main__":
                 client_id=config.mastodon_client_id,
                 client_secret=config.mastodon_client_secret,
                 access_token=config.mastodon_access_token,
-                api_base_url=config.mastodon_instance_url,
+                api_base_url=cast(str, config.mastodon_instance_url),
             )
             api.toot(toot_text)
     else:

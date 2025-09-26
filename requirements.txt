@@ -6,3 +6,4 @@ beautifulsoup4
 Mastodon.py
 python-dotenv
 Requests
+pydantic
