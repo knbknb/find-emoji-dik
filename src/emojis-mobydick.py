@@ -72,14 +72,14 @@ def create_config(args):
     
     # Set the OpenAI access token and model
     openai_access_token = args.openai_token     if args.openai_token  else os.getenv('OPENAI_ACCESS_TOKEN')
-    openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o')
+    openai_model = os.getenv('OPENAI_MODEL', 'gpt-5-nano')
     
     toot = args.toot                            if args.toot else None
     data_file = args.data_file                  if args.data_file else None
     signature = args.signature                  if args.signature else None
     dry_run = args.dry_run                      if args.dry_run else False
     toot_storage_file = 'data/toot_storage.json'
-    translate_service_url = 'https://api.openai.com/v1/chat/completions'
+    translate_service_url = 'https://api.openai.com/v1/responses'
     n_words = 4
      
     # Return a validated AppConfig instance

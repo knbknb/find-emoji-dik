@@ -35,7 +35,7 @@ mock_requests = types.ModuleType("requests")
 def fake_request(method, url, headers=None, data=None):
     class Resp:
         def json(self):
-            return {"choices": [{"message": {"content": ""}}]}
+            return {"output": [{"content": [{"type": "output_text", "text": "😀"}]}]}
     return Resp()
 mock_requests.request = fake_request  # type: ignore[attr-defined]
 sys.modules.setdefault("requests", mock_requests)
@@ -110,6 +110,12 @@ class TestEmojiTranslator(unittest.TestCase):
         # Call translate_to_emoji, which should set attribution
         translator.translate_to_emoji("http://example.com", "token123", dummy_text)
         self.assertEqual(translator.attribution, "-- Test Author")
+
+    def test_translate_to_emoji_returns_emojis_from_responses(self):
+        translator = EmojiTranslator(AppConfig(dry_run=True))
+        emoji, extra = translator.translate_to_emoji("http://example.com", "token123", "Hello world")
+        self.assertEqual(emoji, "😀")
+        self.assertEqual(extra, "")
 
 if __name__ == "__main__":
     unittest.main()

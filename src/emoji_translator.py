@@ -141,24 +141,23 @@ class EmojiTranslator:
 
         payload = {
             "model": model,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": message_template % text
-                }
-            ],
+            "input": message_template % text,
             "top_p": 1,
-            "n": 1,
-            "stream": False,
-            "max_tokens": 1000
+            "max_output_tokens": 3000,
         }
 
         # gpt-5 family (e.g. gpt-5-nano) does not accept temperature; only add temperature
-        # and penalties for models that support them.
-        if not model.startswith("gpt-5"):
-            payload["temperature"] = 0.95
-            payload["presence_penalty"] = 0
-            payload["frequency_penalty"] = 0
+        # and penalties for models that support them. For gpt-5, use minimal reasoning for direct answers.
+        if model.startswith("gpt-5"):
+            payload.update({
+                "reasoning": {"effort": "minimal"}
+            })
+        else:
+            payload.update({
+                "temperature": 0.95,
+                "presence_penalty": 0,
+                "frequency_penalty": 0,
+            })
 
         payload_json = json.dumps(payload)
         headers = {
@@ -187,18 +186,46 @@ class EmojiTranslator:
             resp_json = {}
 
         if isinstance(resp_json, dict):
-            choices = resp_json.get('choices')
-            if choices and isinstance(choices, list) and len(choices) > 0:
-                first = choices[0]
-                # typical chat completion shape
-                if isinstance(first.get('message'), dict):
-                    emoji_text = first['message'].get('content', '') or ''
+            fragments: List[str] = []
+            output = resp_json.get("output")
+            if isinstance(output, list):
+                for item in output:
+                    if isinstance(item, dict):
+                        content = item.get("content", [])
+                        if isinstance(content, list):
+                            for chunk in content:
+                                if isinstance(chunk, dict):
+                                    text_chunk = chunk.get("text")
+                                    if text_chunk:
+                                        fragments.append(text_chunk)
+                                elif isinstance(chunk, str):
+                                    fragments.append(chunk)
+                        elif isinstance(content, str):
+                            fragments.append(content)
+                    elif isinstance(item, str):
+                        fragments.append(item)
+            if fragments:
+                emoji_text = "".join(fragments)
+
+            if not emoji_text:
+                choices = resp_json.get('choices')
+                if choices and isinstance(choices, list) and len(choices) > 0:
+                    first = choices[0]
+                    # typical chat completion shape
+                    if isinstance(first.get('message'), dict):
+                        emoji_text = first['message'].get('content', '') or ''
+                    else:
+                        # fallback to text field
+                        emoji_text = first.get('text', '') or ''
                 else:
-                    # fallback to text field
-                    emoji_text = first.get('text', '') or ''
-            else:
-                # other possible shapes
-                emoji_text = resp_json.get('text', '') or resp_json.get('content', '') or ''
+                    # other possible shapes - ensure we only use strings
+                    text_val = resp_json.get('text', '')
+                    if isinstance(text_val, str):
+                        emoji_text = text_val
+                    else:
+                        content_val = resp_json.get('content', '')
+                        if isinstance(content_val, str):
+                            emoji_text = content_val
         elif isinstance(resp_json, str):
             emoji_text = resp_json
 

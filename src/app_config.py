@@ -15,8 +15,8 @@ class AppConfig(BaseModel):
 
     # OpenAI
     openai_access_token: Optional[str] = None
-    openai_model: str = "gpt-4o"
-    translate_service_url: HttpUrl = cast(HttpUrl, "https://api.openai.com/v1/chat/completions")
+    openai_model: str = "gpt-5-nano"
+    translate_service_url: HttpUrl = cast(HttpUrl, "https://api.openai.com/v1/responses")
 
     # Behavior
     n_words: int = 4
