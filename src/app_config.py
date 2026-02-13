@@ -5,7 +5,7 @@ class AppConfig(BaseModel):
     # Files and user
     file_path: str = "./data/moby-dick-lowercase.txt"
     toot_storage_file: str = "data/toot_storage.json"
-    user: str = "@mobydick@mastodon.art"
+    user: str = "@anarchistquotes@todon.eu"
 
     # Mastodon
     mastodon_instance_url: HttpUrl = cast(HttpUrl, "https://social.vivaldi.net")

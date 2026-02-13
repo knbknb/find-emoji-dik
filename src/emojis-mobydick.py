@@ -125,6 +125,7 @@ if __name__ == "__main__":
                 client_secret=config.mastodon_client_secret,
                 access_token=config.mastodon_access_token,
                 api_base_url=cast(str, config.mastodon_instance_url),
+                user_agent='Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
             )
             api.toot(toot_text)
     else:

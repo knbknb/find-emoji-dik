@@ -33,13 +33,13 @@ class EmojiTranslator:
     def __init__(self, config: AppConfig):
         self.config = config
         self.literature_accounts: List[LiteratureAccount] = [
-            LiteratureAccount(
-                user="@mobydick@mastodon.art",
-                author="Herman Melville",
-                work="Moby Dick",
-                source_file="./data/moby-dick-lowercase.txt",
-                attribution=None,
-            ),
+            # LiteratureAccount(
+                # user="@mobydick@mastodon.art",
+                # author="Herman Melville",
+                # work="Moby Dick",
+                # source_file="./data/moby-dick-lowercase.txt",
+                # attribution=None,
+            # ),
             # LiteratureAccount(
             #     user="@SamuelPepys@mastodon.social",
             #     author="Samuel Pepys",
@@ -215,6 +215,7 @@ class EmojiTranslator:
             client_secret=config.mastodon_client_secret,
             access_token=config.mastodon_access_token,
             api_base_url=str(config.mastodon_instance_url),
+            user_agent='Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
         )
         if config.dry_run:
             print(api.retrieve_mastodon_version())
