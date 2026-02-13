@@ -13,9 +13,9 @@ This README explains the purpose and provides examples of expected output, requi
 
 Simple Command-Line Script for Bash/Linux/Python.
 
-The main script is `emojis-mobydick.py`. The script will fetch the most recent toot from bot-account [@mobydick@mastodon.art](https://social.vivaldi.net/@mobydick@botsin.space) and from other literature accounts.
+The main script is `emojis-mobydick.py`. The script processes toots from literature-themed Mastodon accounts or from local text files in the `data/` directory.
 
-Then the script uses a Large Language Model (LLM) to translate sentence fragments from the novel "Moby Dick" (posted by above-mentioned bot) into Emojis, and post that string of emojis as a new toot to the Mastodon Social Network via its REST API, using a `.env` file for API credentials.
+Then the script uses a Large Language Model (LLM) to translate sentence fragments into Emojis, and posts the fragment+emojis as a new toot to the Mastodon Social Network via its REST API, using a `.env` file for API credentials.
 
 ## Call and Expected Output
 
@@ -43,16 +43,18 @@ Shell output
   Last 4 words: whale was the symbol
   Chapter 42:The Whiteness of The Whale., Paragraph 31, Sentence 4
   Found in book!
-  
+
   And of all these things the Albino whale was the symbol.:
   🔱🧩🎭📩⚪🐋🔣🎴
         -- Herman Melville (h/t @mobydick@mastodon.art)
   (Chapter 42: "The Whiteness of The Whale.", Paragraph 31, Sentence 4)
 ```
 
+Note: The `@mobydick@mastodon.art` bot account has blocked this scraping account, so the script now primarily uses local text files or re-toots from other literature accounts instead.
+
 #### Sideeffect: Post toot to Mastodon
 
-I you have configured an account on the Mastodon social network, a toot with this text will be posted to your account:
+If you have configured an account on the Mastodon social network, a toot with this text will be posted to your account:
 
 ```text
   And of all these things the Albino whale was the symbol.:
@@ -68,7 +70,6 @@ Check your account if this was really published to your timeline.
 
 - a Mastodon account, an OpenAI account
 - API keys+secret for Mastodon, API key for OpenAI
-- the Mastodon account should follow the mobydick bot
 - a local copy of the book "Moby Dick" in a text file. Here, `data/moby-dick-lowercase.txt`.
 - Python: see `requirements.txt` file
 
