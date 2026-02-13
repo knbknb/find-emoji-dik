@@ -21,7 +21,7 @@ Then the script uses a Large Language Model (LLM) to translate sentence fragment
 
 ### CLI Call
 
-    workon mastodon  # my virtualenv, created with virtualenvwrapper
+    source .venv/bin/activate  # Activate the virtual environment
     ./src/emojis-mobydick.py
 
 (Read toots from Mastodon, parse most recent toot; post fragment to LLM API, let LLM translate to Emojis, process LLM response, post fragment+Emojis to own account)
@@ -91,7 +91,13 @@ Or use the command line options.
 
 ### Helper Scripts
 
-Take a look at the files in the `static/` directory of this repo, e.g., to see how to create a Virtualenv.
+To create a new virtual environment, you can use the built-in Python venv module:
+
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+
+Or use the helper script in `static/create_venv_mastodonapi.sh`.
 
 ## TODO
 
