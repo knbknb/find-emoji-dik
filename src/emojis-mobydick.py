@@ -141,7 +141,7 @@ if __name__ == "__main__":
             raise ValueError("OpenAI access token is required to translate text; set OPENAI_ACCESS_TOKEN or pass --openai-token")
         
         emoji_text, _ = translator.translate_to_emoji(
-            config.translate_service_url,
+            str(config.translate_service_url),
             cast(str, config.openai_access_token),
             fragment
         )
@@ -157,7 +157,7 @@ if __name__ == "__main__":
                 client_id=config.mastodon_client_id,
                 client_secret=config.mastodon_client_secret,
                 access_token=config.mastodon_access_token,
-                api_base_url=cast(str, config.mastodon_instance_url),
+                api_base_url=str(config.mastodon_instance_url),
                 user_agent='Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
             )
             api.toot(toot_text)
@@ -168,7 +168,7 @@ if __name__ == "__main__":
         if not config.openai_access_token:
             raise ValueError("OpenAI access token is required to translate snippets; set OPENAI_ACCESS_TOKEN or pass --openai-token")
         emoji_text, _ = translator.translate_to_emoji(
-            config.translate_service_url,
+            str(config.translate_service_url),
             cast(str, config.openai_access_token),
             snippet
         )
@@ -179,7 +179,7 @@ if __name__ == "__main__":
                 client_id=config.mastodon_client_id,
                 client_secret=config.mastodon_client_secret,
                 access_token=config.mastodon_access_token,
-                api_base_url=cast(str, config.mastodon_instance_url),
+                api_base_url=str(config.mastodon_instance_url),
                 user_agent='Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
             )
             api.toot(toot_text)

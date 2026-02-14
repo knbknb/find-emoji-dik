@@ -304,7 +304,7 @@ class EmojiTranslator:
                     if not config.openai_access_token:
                         raise ValueError("OpenAI access token is required; set OPENAI_ACCESS_TOKEN env or pass --openai-token")
                     emoji_toot, extratext = self.translate_to_emoji(
-                        self.config.translate_service_url,
+                        str(self.config.translate_service_url),
                         config.openai_access_token,
                         clean_toot,
                     )

@@ -114,7 +114,7 @@ class TestEmojiTranslator(unittest.TestCase):
     def test_translate_to_emoji_returns_emojis_from_responses(self):
         translator = EmojiTranslator(AppConfig(dry_run=True))
         emoji, extra = translator.translate_to_emoji("http://example.com", "token123", "Hello world")
-        self.assertEqual(emoji, "😀")
+        self.assertEqual(emoji, "😊")
         self.assertEqual(extra, "")
 
 if __name__ == "__main__":

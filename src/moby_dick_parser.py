@@ -94,8 +94,8 @@ class MobyDickParser:
         
         sentences = [s.strip() for s in sentences if s.strip()]
         
-        # If paragraph is short (1-2 sentences), return as-is
-        if len(sentences) <= 2:
+        # If paragraph is short (1 sentence), return as-is
+        if len(sentences) <= 1:
             return paragraph_text
         
         # For longer paragraphs, find interesting sentences

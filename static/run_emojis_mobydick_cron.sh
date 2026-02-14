@@ -9,9 +9,9 @@ cd "$REPO_DIR"
 source ".venv/bin/activate"
 
 action() {
-  printf "%s Starting emoji job\n" "$(date -Is)"
-  "$PYTHON" ./src/emojis-mobydick.py >> "$LOGFILE" 2>&1
-  printf "%s Emoji job finished\n" "$(date -Is)"
+  #printf "%s Starting emoji job\n" "$(date -Is)"
+  python ./src/emojis-mobydick.py >> "$LOGFILE" 2>&1
+  #printf "%s Emoji job finished\n" "$(date -Is)"
 }
 
 action
