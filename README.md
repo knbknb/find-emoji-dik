@@ -32,7 +32,20 @@ You can fetch a random snippet from a text file stored in `data/` with:
 
 (Read random snippet from text file, let LLM translate to Emojis, process LLM response, post fragment+Emojis to own account)
 
+You can also extract a random paragraph directly from the Moby Dick text file with:
+
+    ./src/emojis-mobydick.py --moby-paragraph
+
+(Extract random paragraph from Moby Dick, intelligently select an interesting sentence fragment from it, let LLM translate to Emojis, post fragment+Emojis with chapter and paragraph citation to own account)
+
 In order to avoid duplicate posts, the script will check if the text fragment is already present in the local cache file `data/toot-storage.json`. If it is, the script will skip posting that fragment.
+
+#### Fragment Extraction Strategy
+
+When using the `--moby-paragraph` mode, the script intelligently extracts sentence fragments:
+
+- **Short paragraphs (1-2 sentences)**: Posted as-is without modification
+- **Longer paragraphs**: The script selects the most interesting 1-2 sentences based on length and content relevance (prioritizes sentences containing words like "whale", "sea", "ahab", "voyage", "death", etc.)
 
 ### Expected Output (Example)
 

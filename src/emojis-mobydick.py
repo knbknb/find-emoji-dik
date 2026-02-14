@@ -1,18 +1,31 @@
 #!/usr/bin/env python3
-# Query the mobydick bot on Mastodon for the most recent toot,
-# find the last 4 words in the toot,
-# search the book for the fragment,
-# translate the toot into emojis using the OpenAI API,
-# post the emoji toot on Mastodon. also post the citation from the book.
-# write it to a file for later reference. write it to the console.
-# Optionally read in a toot from the command line.
-# Optionally set --dry-run flag to avoid posting to Mastodon.
-
+# Main script supporting multiple modes:
+#
+# 1. DEFAULT MODE (no --data-file or --moby-paragraph):
+#    Query the mobydick bot on Mastodon for the most recent toot,
+#    find the last 4 words in the toot,
+#    search the book for the fragment,
+#    translate the toot into emojis using the OpenAI API,
+#    post the emoji toot on Mastodon with citation from the book.
+#
+# 2. DATA-FILE MODE (--data-file path/to/file):
+#    Read a random snippet from a text file in the data/ directory,
+#    translate it into emojis using the OpenAI API,
+#    post the snippet+emojis to Mastodon.
+#
+# 3. MOBY-PARAGRAPH MODE (--moby-paragraph):
+#    Extract a random paragraph from Moby Dick,
+#    intelligently extract an interesting sentence fragment from the paragraph
+#    (keep short paragraphs as-is, extract key sentences from longer ones),
+#    translate the fragment into emojis using the OpenAI API,
+#    post the fragment+emojis with chapter and paragraph citation.
+#
+# Optional flags: --dry-run (preview without posting), --signature (for data-file mode)
+#
 # Needs:
 #    - a mastodon account, an OpenAI account
 #    - API keys+secret for mastodon, API key for OpenAI
-#    - the mastodon account should follow the mobydick bot
-#    - a local copy of the book "Moby Dick" in a text file; coverted to lowercase
+#    - a local copy of the book "Moby Dick" in a text file; converted to lowercase
 #    - A venv that can resolve the Mastodon.py library
 
 # pip install wheel bs4 requests python-dotenv Mastodon.py 
