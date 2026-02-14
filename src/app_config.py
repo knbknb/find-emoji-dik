@@ -22,6 +22,7 @@ class AppConfig(BaseModel):
     n_words: int = 4
     toot: Optional[str] = None
     data_file: Optional[str] = None
+    moby_paragraph: bool = False
     signature: Optional[str] = None
     dry_run: bool = False
 

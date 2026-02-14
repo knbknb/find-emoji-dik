@@ -1,4 +1,5 @@
 import re
+import random
 
 class MobyDickParser:
     def __init__(self, file_path):
@@ -51,6 +52,80 @@ class MobyDickParser:
                         chapter_title = re.sub(r'^\d+\.\s*', '', chapter_title)
                         return chapter_num + 1, chapter_title, paragraph_num + 1, sentence_num + 1
         return None, None, None, None
+
+    def get_random_paragraph(self):
+        """Get a random paragraph from the book and its chapter information."""
+        # Flatten all paragraphs with their chapter info
+        all_paragraphs = []
+        for chapter_num, paragraphs in enumerate(self.paragraphs_per_chapter):
+            for paragraph_num, paragraph in enumerate(paragraphs):
+                chapter_title = self.chapters[chapter_num][0]
+                chapter_title = re.sub(r'^\d+\.\s*', '', chapter_title)
+                all_paragraphs.append({
+                    'text': paragraph,
+                    'chapter_num': chapter_num + 1,
+                    'chapter_title': chapter_title,
+                    'paragraph_num': paragraph_num + 1
+                })
+        
+        if not all_paragraphs:
+            return None
+        
+        return random.choice(all_paragraphs)
+
+    def extract_interesting_fragment(self, paragraph_text, max_sentences=2):
+        """Extract an interesting sentence fragment from a paragraph.
+        
+        For longer paragraphs, extract 1-2 sentences that seem most interesting
+        based on length and content. For short paragraphs, return as-is.
+        """
+        # Split into sentences
+        sentence_delimiters = re.compile(r'([.!?])\s+')
+        parts = sentence_delimiters.split(paragraph_text)
+        
+        # Reconstruct sentences with their punctuation
+        sentences = []
+        for i in range(0, len(parts) - 1, 2):
+            if i + 1 < len(parts):
+                sentences.append(parts[i] + parts[i + 1])
+        # Add last part if it exists and wasn't paired
+        if len(parts) % 2 == 1 and parts[-1].strip():
+            sentences.append(parts[-1])
+        
+        sentences = [s.strip() for s in sentences if s.strip()]
+        
+        # If paragraph is short (1-2 sentences), return as-is
+        if len(sentences) <= 2:
+            return paragraph_text
+        
+        # For longer paragraphs, find interesting sentences
+        # Criteria: prefer longer sentences with interesting words
+        interesting_words = [
+            'whale', 'sea', 'ship', 'ocean', 'captain', 'ahab', 'moby',
+            'ishmael', 'harpoon', 'voyage', 'death', 'soul', 'nature',
+            'mysterious', 'strange', 'terror', 'wonder', 'deep', 'eternal'
+        ]
+        
+        scored_sentences = []
+        for i, sentence in enumerate(sentences):
+            score = len(sentence)  # Base score on length
+            # Bonus for interesting words
+            lower_sentence = sentence.lower()
+            for word in interesting_words:
+                if word in lower_sentence:
+                    score += 50
+            scored_sentences.append((score, i, sentence))
+        
+        # Sort by score and take top 1-2 sentences
+        scored_sentences.sort(reverse=True)
+        selected_sentences = scored_sentences[:max_sentences]
+        
+        # Sort selected sentences by their original position to maintain order
+        selected_sentences.sort(key=lambda x: x[1])
+        
+        # Reconstruct the fragment
+        fragment = ' '.join([s[2] for s in selected_sentences])
+        return fragment
 
 
 if __name__ == "__main__":

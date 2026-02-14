@@ -22,6 +22,7 @@ import os
 import argparse
 from emoji_translator import EmojiTranslator  # loads moby_dick_parser
 from data_fileparser import DataFileParser
+from moby_dick_parser import MobyDickParser
 from mastodon import Mastodon
 from typing import Optional, cast
 from app_config import AppConfig
@@ -48,6 +49,7 @@ def parse_command_line_args():
         parser.add_argument('-o', '--openai-token', type=str, help='OpenAI access token')
         parser.add_argument('-t', '--toot', type=str, help='The @mobydick toot to search for in the book')
         parser.add_argument('--data-file', type=str, help='Text file in data/ to fetch a random snippet from')
+        parser.add_argument('--moby-paragraph', action='store_true', help='Extract and post a random paragraph from Moby Dick')
         parser.add_argument('--signature', type=str, help='Signature for text snippets')
         parser.add_argument('-d', '--dry-run', action='store_true', default=False, help='Do NOT really post the toot to mastodon network')
         
@@ -76,6 +78,7 @@ def create_config(args):
     
     toot = args.toot                            if args.toot else None
     data_file = args.data_file                  if args.data_file else None
+    moby_paragraph = args.moby_paragraph        if args.moby_paragraph else False
     signature = args.signature                  if args.signature else None
     dry_run = args.dry_run                      if args.dry_run else False
     toot_storage_file = 'data/toot_storage.json'
@@ -97,6 +100,7 @@ def create_config(args):
         n_words=n_words,
         toot=toot,
         data_file=data_file,
+        moby_paragraph=moby_paragraph,
         signature=signature,
         dry_run=dry_run,
     )
@@ -107,7 +111,45 @@ if __name__ == "__main__":
     config = create_config(args)
     translator = EmojiTranslator(config)
 
-    if config.data_file:
+    if config.moby_paragraph:
+        # Extract random paragraph from Moby Dick
+        parser = MobyDickParser(config.file_path)
+        paragraph_data = parser.get_random_paragraph()
+        
+        if not paragraph_data:
+            print("Error: Could not extract paragraph from Moby Dick")
+            exit(1)
+        
+        # Extract interesting fragment from the paragraph
+        fragment = parser.extract_interesting_fragment(paragraph_data['text'])
+        
+        # Translate to emojis
+        if not config.openai_access_token:
+            raise ValueError("OpenAI access token is required to translate text; set OPENAI_ACCESS_TOKEN or pass --openai-token")
+        
+        emoji_text, _ = translator.translate_to_emoji(
+            config.translate_service_url,
+            cast(str, config.openai_access_token),
+            fragment
+        )
+        
+        # Format the toot with chapter information
+        chapter_info = f"(Moby Dick - Chapter {paragraph_data['chapter_num']}: \"{paragraph_data['chapter_title']}\", Paragraph {paragraph_data['paragraph_num']})"
+        toot_text = f"{fragment}\n\n{emoji_text}\n\n{chapter_info}"
+        
+        print(toot_text)
+        
+        if not config.dry_run:
+            api = Mastodon(
+                client_id=config.mastodon_client_id,
+                client_secret=config.mastodon_client_secret,
+                access_token=config.mastodon_access_token,
+                api_base_url=cast(str, config.mastodon_instance_url),
+                user_agent='Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
+            )
+            api.toot(toot_text)
+    
+    elif config.data_file:
         parser = DataFileParser(config.data_file)
         snippet = parser.get_random_snippet()
         if not config.openai_access_token:
