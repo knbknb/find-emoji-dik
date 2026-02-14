@@ -130,11 +130,13 @@ class EmojiTranslator:
 
         # message template for chat completion
         message_template = """<task>
-                        translate the following text into emojis:
+                        translate the following text into emojis.
                         I need only the emojis, on a single line.
                         Do not respond with text.
-                        Still keep original punctuation in the emoji output.
-                        Do not include any zero-width joiner characters in the output.
+                        Still keep original punctuation (commas, full stops, dashes etc.) in the emoji output.
+                        If the text is long, extract the most important part verbatim and translate that to emojis, 
+                        rather than trying to translate everything. The output should be the most interesting, surprising or emotionally 
+                        moving part relative to humans.
                     </task>
                     <text>%s</text>
                     """
