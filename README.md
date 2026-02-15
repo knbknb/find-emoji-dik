@@ -119,19 +119,21 @@ Or use the helper script in `static/create_venv_mastodonapi.sh`.
 - ~~Make it a script that polls mastodon account of the @mobydick  bot account every n minutes, and posts new toots to our account.~~
   - ~~Make sure it doesn't post the same toot several times.~~
   - ~~Clearly handle edge-case when a text fragment was not found in the book (e.g. when punctuation or whitespace differences are interfering)~~
-  - Properly reply to the original toot, so that the thread is kept intact.
+  - ~~Properly reply to the original toot, so that the thread is kept intact. (WON'T FIX, because the original bot account has blocked this account, so we can't reply to the original toots anymore)~~
 - ~~Read from other literature accounts.~~
 - ~~Include some literary works as static files that are read from the filesystem.~~
-- Rewrite this script with other LLMs, ~~with other books, with other literature bots~~.
+- ~~Rewrite this script to use the OpenAI client library instead of direct HTTP calls to the OpenAI REST API~~
+- ~~Rewrite this script such that it works with other books, with other literature bots~~.
+- ~~Rewrite this script such that it works with other LLMs~~ (WON'T FIX, because of the specific prompt engineering and response parsing that is currently implemented for OpenAI's API)
 - Translate whole books into emojis, and post them to some social networks.
 - Rewrite this such that it uses an agentic architecture, e.g. with a central agent that distributes tasks to worker agents, posting even more emojified quotes to all social networks.
 
 ## Tests
 
-Test with _pytest_, e.g.,  
+Unit Tests with _pytest_, e.g.,  
 
 ```bash
-# cd into repo root directory and run all tests with unittest:`
+# cd into repo root directory and run all tests:`
 python -m unittest discover -s tests -p 'test_*.py'
 ```
 
