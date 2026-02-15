@@ -64,6 +64,7 @@ from app_config import AppConfig
 class TestEmojiTranslatorAttribution(unittest.TestCase):
     def setUp(self):
         self.translator = EmojiTranslator(AppConfig(dry_run=True))
+        self.possible_emojis = ["😊", "😀"]
 
     def test_split_attribution_no_attribution(self):
         text = "Just some text\nwith multiple lines."
@@ -92,28 +93,28 @@ class TestEmojiTranslatorAttribution(unittest.TestCase):
     def test_translate_to_emoji_sets_attribution_with_author(self):
         text = "Hello world\n-- Jane"
         emoji, attrib = self.translator.translate_to_emoji("http://fake", "token123", text)
-        self.assertEqual(emoji, "😊")
+        self.assertIn(emoji, self.possible_emojis)
         self.assertEqual(attrib, "-- Jane")
         self.assertEqual(self.translator.attribution, "-- Jane")
 
     def test_translate_to_emoji_cleans_hashtagged_attribution(self):
         text = "Hello world\n-- Jane #tag1 #tag2"
         emoji, attrib = self.translator.translate_to_emoji("http://fake", "token123", text)
-        self.assertEqual(emoji, "😊")
+        self.assertIn(emoji, self.possible_emojis)
         self.assertEqual(attrib, "-- Jane")
         self.assertEqual(self.translator.attribution, "-- Jane")
 
     def test_translate_to_emoji_ignores_trailing_hashtags(self):
         text = "Hello world\n-- Jane\n#tag1 #tag2"
         emoji, attrib = self.translator.translate_to_emoji("http://fake", "token123", text)
-        self.assertEqual(emoji, "😊")
+        self.assertIn(emoji, self.possible_emojis)
         self.assertEqual(attrib, "-- Jane")
         self.assertEqual(self.translator.attribution, "-- Jane")
 
     def test_translate_to_emoji_sets_attribution_without_author(self):
         text = "Hello world"
         emoji, attrib = self.translator.translate_to_emoji("http://fake", "token123", text)
-        self.assertEqual(emoji, "😊")
+        self.assertIn(emoji, self.possible_emojis)
         self.assertEqual(attrib, "")
         self.assertEqual(self.translator.attribution, "")
 

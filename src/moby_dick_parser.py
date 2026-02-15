@@ -139,7 +139,7 @@ class MobyDickParser:
 if __name__ == "__main__":
     file_path = './data/moby-dick-lowercase.txt'
     parser = MobyDickParser(file_path)
-    
+    # try to find fragment from @mobydickatsea account timeline of posts/toots
     fragment = input("Please enter a sentence fragment to search for: ")
     chapter_num, chapter_title, paragraph_num, sentence_num = parser.find_fragment(fragment)
 
