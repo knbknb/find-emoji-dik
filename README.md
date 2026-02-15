@@ -49,7 +49,9 @@ When using the `--moby-paragraph` mode, the script intelligently extracts senten
 
 ### Expected Output (Example)
 
-Shell output
+#### Shell output
+
+Longer than the Mastodon post
 
 ```text
 
@@ -63,7 +65,7 @@ Shell output
   (Chapter 42: "The Whiteness of The Whale.", Paragraph 31, Sentence 4)
 ```
 
-Note: The `@mobydick@mastodon.art` bot account has blocked this scraping account, so the script now primarily uses local text files or re-toots from other literature accounts instead.
+Note: The popular [`@mobydick@mastodon.art`](https://mastodon.art/@mobydick) bot account has blocked my scraping account, so this script now primarily uses local text files from the `data/` directory; or re-toots from other literature accounts instead.
 
 #### Sideeffect: Post toot to Mastodon
 
