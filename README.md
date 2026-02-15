@@ -146,5 +146,5 @@ See `static/tests/integration/` for some Python scripts that you can run to test
 
 ## Obsolete
 
-I've looked at the original Emoji Dick crowdsourcing project as desribed in an [Arxiv paper](https://arxiv.org/pdf/1611.02027.pdf) from 2016. However that opus is available only as a PDF Document with emojis concatenated into larger PNG images.  
-The original project is not available as a Python script, and the authors have not published the code. The original project was also created before the era of LLMs, so it is not directly compatible with the current state of the art in AI-supported emoji translation.
+I've looked at the original Emoji Dick crowdsourcing project from 2010 as referenced in an [Arxiv paper](https://arxiv.org/pdf/1611.02027.pdf) from 2016. However that project's output is available only as a PDF Document with emojis concatenated into larger PNG images.  
+The original project is not available anymore at the official website, `www.emojidick.com`. The original project was also created before the era of LLMs, so it is not directly compatible with the current state of the art in AI-supported emoji translation.
