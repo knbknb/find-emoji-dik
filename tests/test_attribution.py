@@ -52,9 +52,12 @@ def _model_validator(mode=None):
     def decorator(fn):
         return fn
     return decorator
+def _Field(**kwargs):
+    return kwargs.get("default")
 shim_pydantic.BaseModel = _BaseModel  # type: ignore[attr-defined]
 shim_pydantic.model_validator = _model_validator  # type: ignore[attr-defined]
 shim_pydantic.field_validator = _model_validator  # type: ignore[attr-defined]
+shim_pydantic.Field = _Field  # type: ignore[attr-defined]
 shim_pydantic.HttpUrl = str  # type: ignore[attr-defined]
 sys.modules.setdefault("pydantic", shim_pydantic)
 

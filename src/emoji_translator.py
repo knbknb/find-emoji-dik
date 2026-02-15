@@ -143,16 +143,19 @@ class EmojiTranslator:
 
         return client.responses.create(**args)
 
-    def translate_to_emoji_openai(self, openai_access_token="openai_access_token", text="🐳"):
+    def translate_to_emoji_openai(self, openai_access_token="openai_access_token", text="🐳", req_cfg: Optional[OpenAIRequestConfig] = None):
         """Translate text to emojis using OpenAI Python SDK Responses API."""
         main_text, extratext = self.split_attribution(text)
         self.attribution = extratext
+
+        req_cfg = req_cfg or OpenAIRequestConfig(model=self.config.openai_model)
 
         try:
             response = self.call_api_for_emoji_translation_openai(
                 openai_access_token,
                 main_text,
                 model=self.config.openai_model,
+                req_cfg=req_cfg
             )
         except Exception:
             # API/network error: return empty emoji text so caller can handle it
@@ -161,6 +164,9 @@ class EmojiTranslator:
 
         # Prefer the SDK convenience attribute when available
         emoji_text = (getattr(response, "output_text", "") or "").strip()
+
+        if emoji_text:
+            emoji_text = req_cfg.shorten_emoji_text(emoji_text)
 
         return emoji_text, extratext
 

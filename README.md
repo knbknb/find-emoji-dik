@@ -130,11 +130,14 @@ Or use the helper script in `static/create_venv_mastodonapi.sh`.
 
 ## Tests
 
-Unit Tests with _pytest_, e.g.,  
+Unit Tests with _unittest_ or _pytest_, e.g.,  
 
 ```bash
 # cd into repo root directory and run all tests:`
 python -m unittest discover -s tests -p 'test_*.py'
+
+# or with pytest:
+PYTHONPATH=src find-emoji-dik/.venv/bin/python -m pytest tests/
 ```
 
 System tests with bash and python:
