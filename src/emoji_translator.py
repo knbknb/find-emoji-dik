@@ -10,6 +10,8 @@ import json
 from datetime import datetime, timedelta
 import re  # added for attribution splitting
 from typing import Optional, List
+import logging
+from openai_config import OpenAIRequestConfig
 from pydantic import BaseModel, field_validator
 from app_config import AppConfig
 
@@ -62,6 +64,8 @@ class EmojiTranslator:
             ),
         ]
         self.attribution = None
+        # instance logger
+        self.logger = logging.getLogger(__name__)
 
     def last_n_words(self, s, n=5) :
         '''Return the last n words from a toot/string, removing the period at the end if present.'''
@@ -122,40 +126,22 @@ class EmojiTranslator:
             return True
         return datetime.now() - last > timedelta(days=interval_days)
 
-    def call_api_for_emoji_translation_openai(self, openai_access_token, text, model=None):
-        """Use OpenAI Python SDK Responses API to translate text to emojis."""
+    def call_api_for_emoji_translation_openai(self, openai_access_token, text, model=None, req_cfg: Optional[OpenAIRequestConfig] = None):
+        """Use OpenAI Python SDK Responses API to translate text to emojis.
+
+        Accepts an optional `OpenAIRequestConfig` instance. If not provided,
+        a default config will be created from `model`.
+        """
         from openai import OpenAI
 
         model = model or self.config.openai_model
         client = OpenAI(api_key=openai_access_token)
 
-        message_template = """<task>
-                        translate the following text into emojis.
-                        I need only the emojis, on a single line.
+        req_cfg = req_cfg or OpenAIRequestConfig(model=model)
+        args = dict(req_cfg.request_args)
+        args["input"] = req_cfg.build_input(text)
 
-                        Do not respond with text, except for the emojis and punctuation characters. 
-                        Respond with a stream of emojis, do not break them up with spaces or newlines.  
-                        Do not include any text, explanation, or commentary, just the emojis.
-                        Try to insert original punctuation (commas, full stops, dashes etc.) 
-                        from the original text back into the emoji output,
-                        at the appropriate positions.
-                        
-                        If the stream of emojis is larger than 100 emojis, truncate it by taking the first 70 emojis, insert a #...',
-                        then append the last 30 emojis, so that the final output is not too long 
-                        but still contains the beginning and end of the emoji translation.
-                    </task>
-                    <text>%s</text>
-                    """
-
-        request_args = {
-            "model": model,
-            "input": message_template % text,
-            "top_p": 1,
-            "max_output_tokens": 3000,
-            "reasoning" : {"effort": "minimal"}
-        }
-
-        return client.responses.create(**request_args)
+        return client.responses.create(**args)
 
     def translate_to_emoji_openai(self, openai_access_token="openai_access_token", text="🐳"):
         """Translate text to emojis using OpenAI Python SDK Responses API."""
@@ -168,9 +154,9 @@ class EmojiTranslator:
                 main_text,
                 model=self.config.openai_model,
             )
-        except Exception as e:
+        except Exception:
             # API/network error: return empty emoji text so caller can handle it
-            print(f"OpenAI API error: {e}")
+            self.logger.exception("OpenAI API error while calling responses.create")
             return "(Translation error)", extratext
 
         # Prefer the SDK convenience attribute when available
