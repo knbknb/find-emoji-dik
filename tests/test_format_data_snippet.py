@@ -8,8 +8,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 module_name = 'emojis_mobydick'
 file_path = os.path.join(os.path.dirname(__file__), '..', 'src', 'emojis-mobydick.py')
 spec = importlib.util.spec_from_file_location(module_name, file_path)
-module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(module)
+module = importlib.util.module_from_spec(spec) # type: ignore
+spec.loader.exec_module(module) # type: ignore
 
 class TestFormatDataSnippet(unittest.TestCase):
     def test_with_signature(self):

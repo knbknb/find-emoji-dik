@@ -40,6 +40,35 @@ def fake_request(method, url, headers=None, data=None):
 mock_requests.request = fake_request  # type: ignore[attr-defined]
 sys.modules.setdefault("requests", mock_requests)
 
+# Provide a minimal mock for openai SDK used by emoji_translator
+mock_openai = types.ModuleType("openai")
+
+class DummyOpenAIResponse:
+    def __init__(self, output_text="😀"):
+        self.output_text = output_text
+
+    def model_dump(self):
+        return {
+            "output": [
+                {"content": [{"type": "output_text", "text": self.output_text}]}
+            ]
+        }
+
+
+class DummyResponsesAPI:
+    def create(self, **kwargs):
+        return DummyOpenAIResponse(output_text="😀")
+
+
+class DummyOpenAI:
+    def __init__(self, api_key=None):
+        self.api_key = api_key
+        self.responses = DummyResponsesAPI()
+
+
+mock_openai.OpenAI = DummyOpenAI  # type: ignore[attr-defined]
+sys.modules.setdefault("openai", mock_openai)
+
 # Minimal shim for pydantic so tests don't require the real package
 shim_pydantic = types.ModuleType("pydantic")
 class _BaseModel:
@@ -109,12 +138,12 @@ class TestEmojiTranslator(unittest.TestCase):
         translator = EmojiTranslator(AppConfig(dry_run=True))
         dummy_text = "Sample content.\n-- Test Author"
         # Call translate_to_emoji, which should set attribution
-        translator.translate_to_emoji("http://example.com", "token123", dummy_text)
+        translator.translate_to_emoji_openai("token123", dummy_text)
         self.assertEqual(translator.attribution, "-- Test Author")
 
     def test_translate_to_emoji_returns_emojis_from_responses(self):
         translator = EmojiTranslator(AppConfig(dry_run=True))
-        emoji, extra = translator.translate_to_emoji("http://example.com", "token123", "Hello world")
+        emoji, extra = translator.translate_to_emoji_openai( "token123", "Hello world")
         self.assertIn(emoji, self.possible_emojis)
         self.assertEqual(extra, "")
 

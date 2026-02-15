@@ -140,8 +140,8 @@ if __name__ == "__main__":
         if not config.openai_access_token:
             raise ValueError("OpenAI access token is required to translate text; set OPENAI_ACCESS_TOKEN or pass --openai-token")
         
-        emoji_text, _ = translator.translate_to_emoji(
-            str(config.translate_service_url),
+        emoji_text, _ = translator.translate_to_emoji_openai(
+            # str(config.translate_service_url), # additional argument needed only in legacy translate_to_emoji
             cast(str, config.openai_access_token),
             fragment
         )
@@ -167,11 +167,7 @@ if __name__ == "__main__":
         snippet = parser.get_random_snippet()
         if not config.openai_access_token:
             raise ValueError("OpenAI access token is required to translate snippets; set OPENAI_ACCESS_TOKEN or pass --openai-token")
-        emoji_text, _ = translator.translate_to_emoji(
-            str(config.translate_service_url),
-            cast(str, config.openai_access_token),
-            snippet
-        )
+        emoji_text, _ = translator.translate_to_emoji_openai(cast(str, config.openai_access_token),snippet)
         toot_text = format_data_snippet(snippet, emoji_text, config.signature)
         print(toot_text)
         if not config.dry_run:
