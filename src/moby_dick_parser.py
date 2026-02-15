@@ -101,9 +101,17 @@ class MobyDickParser:
         # For longer paragraphs, find interesting sentences
         # Criteria: prefer longer sentences with interesting words
         interesting_words = [
-            'whale', 'sea', 'ship', 'ocean', 'captain', 'ahab', 'moby',
-            'ishmael', 'harpoon', 'voyage', 'death', 'soul', 'nature',
-            'mysterious', 'strange', 'terror', 'wonder', 'deep', 'eternal'
+            'ahab', 'air', 'among', 'ancient', 'aye', 'bed', 'beheld', 
+            'boat', 'boats', 'bones', 'captain', 'dead', 'death', 'deep', 'eternal', 
+            'eyes', 'fossil', 'god', 'good', 'great', 'hand', 'harpoon', 'ishmael', 
+            'know', 'lay', 'life', 'like', 'long', 'man', 'men', 'moby', 
+            'mysterious', 'nature', 'ocean', 'oh', 'old', 'one', 
+            'queequeg', 
+            'said', 'say', 'sea', 'see', 'seen', 'ship', 'sir', 
+            'sleeping', 'soul', 'starbuck', 'still', 'stop', 'straight', 
+            'strange', 'stubb', 'sun', 'sunrise', 'sperm', 'terror', 'things', 
+            'though', 'time', 'two', 'upon', 'vessel', 'voyage', 'water', 
+            'whale', 'whales', 'wonder', 'would', 'ye', 'yet'
         ]
         
         scored_sentences = []

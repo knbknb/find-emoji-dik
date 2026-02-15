@@ -128,12 +128,18 @@ Or use the helper script in `static/create_venv_mastodonapi.sh`.
 
 ## Tests
 
-(under construction).
-Test with pytest, e.g.,  
-`pytest-3 unittest_mobydick_strings.py`  
-or  
-`python -m unittest discover -s tests -p 'test_*.py'`
+Test with _pytest_, e.g.,  
+
+```bash
+# cd into repo root directory and run all tests with unittest:`
+python -m unittest discover -s tests -p 'test_*.py'
+```
+
+System tests with bash and python:
+
+See `static/tests/integration/` for some Python scripts that you can run to test the availability of the Mastodon API, the LLM API, and to make focused use of some command line options.
 
 ## Obsolete
 
-I've looked at the original emojidick community project, but that book is available only as a PDF with emojis  concatenated into larger images. There is some code left for parsing the PDF, but I'll delete it later.
+I've looked at the original Emoji Dick crowdsourcing project as desribed in an [Arxiv paper](https://arxiv.org/pdf/1611.02027.pdf) from 2016. However that opus is available only as a PDF Document with emojis concatenated into larger PNG images.  
+The original project is not available as a Python script, and the authors have not published the code. The original project was also created before the era of LLMs, so it is not directly compatible with the current state of the art in AI-supported emoji translation.
