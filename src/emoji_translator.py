@@ -132,11 +132,17 @@ class EmojiTranslator:
         message_template = """<task>
                         translate the following text into emojis.
                         I need only the emojis, on a single line.
-                        Do not respond with text.
-                        Still keep original punctuation (commas, full stops, dashes etc.) in the emoji output.
-                        If the text is long, extract the most important part verbatim and translate that to emojis, 
-                        rather than trying to translate everything. The output should be the most interesting, surprising or emotionally 
-                        moving part relative to humans.
+
+                        Do not respond with text, except for the emojis and punctuation characters. 
+                        Respond with a stream of emojis, do not break them up with spaces or newlines.  
+                        Do not include any text, explanation, or commentary, just the emojis.
+                        Try to insert original punctuation (commas, full stops, dashes etc.) 
+                        from the original text back into the emoji output,
+                        at the appropriate positions.
+                        
+                        If the stream of emojis is larger than 100 emojis, truncate it by taking the first 70 emojis, insert a #...',
+                        then append the last 30 emojis, so that the final output is not too long 
+                        but still contains the beginning and end of the emoji translation.
                     </task>
                     <text>%s</text>
                     """
@@ -146,12 +152,8 @@ class EmojiTranslator:
             "input": message_template % text,
             "top_p": 1,
             "max_output_tokens": 3000,
+            "reasoning" : {"effort": "minimal"}
         }
-
-        if model.startswith("gpt-5"):
-            request_args["reasoning"] = {"effort": "minimal"}
-        else:
-            request_args["temperature"] = 0.95
 
         return client.responses.create(**request_args)
 
@@ -160,42 +162,19 @@ class EmojiTranslator:
         main_text, extratext = self.split_attribution(text)
         self.attribution = extratext
 
-        response = self.call_api_for_emoji_translation_openai(
-            openai_access_token,
-            main_text,
-            model=self.config.openai_model,
-        )
+        try:
+            response = self.call_api_for_emoji_translation_openai(
+                openai_access_token,
+                main_text,
+                model=self.config.openai_model,
+            )
+        except Exception as e:
+            # API/network error: return empty emoji text so caller can handle it
+            print(f"OpenAI API error: {e}")
+            return "(Translation error)", extratext
 
+        # Prefer the SDK convenience attribute when available
         emoji_text = (getattr(response, "output_text", "") or "").strip()
-
-        if not emoji_text:
-            try:
-                resp_json = response.model_dump()
-            except Exception:
-                resp_json = {}
-
-            if isinstance(resp_json, dict):
-                fragments: List[str] = []
-                output = resp_json.get("output")
-                if isinstance(output, list):
-                    for item in output:
-                        if isinstance(item, dict):
-                            content = item.get("content", [])
-                            if isinstance(content, list):
-                                for chunk in content:
-                                    if isinstance(chunk, dict):
-                                        text_chunk = chunk.get("text")
-                                        if text_chunk:
-                                            fragments.append(text_chunk)
-                                    elif isinstance(chunk, str):
-                                        fragments.append(chunk)
-                            elif isinstance(content, str):
-                                fragments.append(content)
-                        elif isinstance(item, str):
-                            fragments.append(item)
-
-                if fragments:
-                    emoji_text = "".join(fragments).strip()
 
         return emoji_text, extratext
 
