@@ -14,6 +14,12 @@ class OpenAIRequestConfig(BaseModel):
                         Try to insert original punctuation (commas, full stops, dashes etc.) 
                         from the original text back into the emoji output,
                         at the appropriate positions.
+
+                        Sometimes a text may start with a name, e.g "LADY MACBETH:". 
+                        Sometimes a text may end with two dashes followed by a name, e.g. "-- Yogi Berra"
+                        In these cases, try to preserve the name in the output. Do not translate the name into emojis, 
+                        but do include the name in the output, at the appropriate position.
+                        
                     </task>
                     
                     <text>%s</text>
